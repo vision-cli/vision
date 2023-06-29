@@ -1,0 +1,130 @@
+project: exampleproject
+deployment: standalone-graphql
+modules:
+  - module:
+    name: projects
+    apiVersion: v1
+    services:
+      - service: projects
+        enums:
+          - enum: project-type
+            values:
+              - not-assigned
+              - internal
+              - client-investment
+              - billable
+        entities:
+          - entity: project
+            persistence: db
+            fields:
+              - name: name
+                type: string
+                array: false
+                required: true
+                searchable: false
+              - name: description
+                type: string
+                array: false
+                required: true
+                searchable: false
+              - name: start-date
+                type: timestamp
+                array: false
+                required: true
+                searchable: false
+              - name: end-date
+                type: timestamp
+                array: false
+                required: true
+                searchable: false
+              - name: git-repository-link
+                type: string
+                array: false
+                required: true
+                searchable: false
+              - name: number-req-squads
+                type: unsigned
+                array: false
+                required: true
+                searchable: false
+              - name: number-req-members
+                type: unsigned
+                array: false
+                required: true
+                searchable: false
+              - name: confirmed
+                type: boolean
+                array: false
+                required: true
+                searchable: true
+
+          - entity: milestone
+            persistence: db
+            fields:
+              - name: name
+                type: string
+                array: false
+                required: true
+                searchable: true
+              - name: date
+                type: timestamp
+                array: false
+                required: true
+                searchable: false
+      - service: clients
+        entities:
+          - entity: client
+            persistence: db
+            fields:
+              - name: company-name
+                type: string
+                array: false
+                required: true
+                searchable: true
+              - name: atos-contact
+                type: string
+                array: false
+                required: true
+                searchable: false
+              - name: project-id
+                type: id
+                array: false
+                required: true
+                searchable: false
+  - module:
+    name: squads
+    apiVersion: v1
+    services:
+      - service: squads
+        entities:
+          - entity: squad
+            persistence: db
+            fields:
+              - name: name
+                type: string
+                array: false
+                required: true
+                searchable: false
+              - name: location
+                type: string
+                array: false
+                required: true
+                searchable: true
+      - service: members
+        entities:
+          - entity: staff
+            persistence: db
+            fields:
+              - name: name
+                type: string
+                array: false
+                required: true
+                searchable: true
+          - entity: contractors
+            persistence: db
+            fields:
+              - name: name
+                type: string
+                array: false
+                required: true
+                searchable: true
