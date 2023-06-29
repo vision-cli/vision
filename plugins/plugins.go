@@ -10,12 +10,13 @@ import (
 	"github.com/spf13/cobra"
 	api_v1 "github.com/vision-cli/api/v1"
 	"github.com/vision-cli/vision/cli"
+	"github.com/vision-cli/vision/config"
+	"github.com/vision-cli/vision/flag"
+	"github.com/vision-cli/vision/placeholders"
 )
 
 var UsageQuery = api_v1.PluginRequest{
-	Command:      api_v1.CommandUsage,
-	Args:         "",
-	Placeholders: "",
+	Command: api_v1.CommandUsage,
 }
 
 func GetPlugins() []string {
@@ -44,28 +45,38 @@ func GetCobraCommand(plugin string) *cobra.Command {
 	if err != nil {
 		cli.Fatalf("Cannot marshal usage query for plugin %s", plugin)
 	}
-	return &cobra.Command{
+	cc := cobra.Command{
 		Use:     usage.Use,
 		Short:   usage.Short,
 		Long:    usage.Long,
 		Example: usage.Example,
 		Run: func(cmd *cobra.Command, args []string) {
+			if err := initializeConfig(cmd); err != nil {
+				cli.Fatalf("Cannot initialize config: %v", err)
+			}
+			placeholders := placeholders.NewPlaceholders(cmd.Flags(), ".", "default", "", "")
 			runQuery, err := MarshalRequest(api_v1.PluginRequest{
 				Command:      api_v1.CommandRun,
-				Args:         "",
-				Placeholders: "",
+				Args:         args,
+				Flags:        []api_v1.PluginFlag{},
+				Placeholders: placeholders,
 			})
 			if err != nil {
 				cli.Fatalf("Cannot marshal run query for plugin %s", plugin)
 			}
 			response := callPlugin(pluginPath, runQuery)
-			result, err := UnmarshalResponse[api_v1.PluginRunResponse](response)
+			result, err := UnmarshalResponse[api_v1.PluginResponse](response)
 			if err != nil {
 				cli.Fatalf("Cannot unmarshal response from plugin %s", plugin)
+			}
+			if result.Error != "" {
+				cli.Fatalf(result.Error)
 			}
 			cli.Infof(result.Result)
 		},
 	}
+	cc.Flags().AddFlagSet(flag.ConfigFlagset())
+	return &cc
 }
 
 func UnmarshalResponse[T any](reqStr string) (T, error) {
@@ -99,7 +110,7 @@ func goBinPath() string {
 
 func fileIsVisionPlugin(filename string) bool {
 	c := strings.Split(filename, "-")
-	// eventialluy remove 'example' as well
+	// eventually remove 'example'
 	if len(c) != 4 || c[0] != "vision" || c[1] != "plugin" {
 		return false
 	}
@@ -114,4 +125,17 @@ func callPlugin(plugin string, input string) string {
 		cli.Fatalf("Cannot run plugin %s", plugin)
 	}
 	return string(out)
+}
+
+func initializeConfig(cmd *cobra.Command) error {
+	var path string
+	dir, err := os.Getwd()
+	if err != nil {
+		path = ""
+	} else {
+		path = filepath.Base(dir)
+	}
+
+	// load the project config file if it exists, otherwise prompt the user to create one
+	return config.LoadConfig(cmd.Flags(), flag.IsSilent(cmd.Flags()), config.ConfigFilename, path)
 }

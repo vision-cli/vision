@@ -1,0 +1,9 @@
+{
+  "project": {
+    "deployment": "standalone-graphql",
+    "name": "test",
+    "remote": "remote",
+    "template-version": "v1"
+  },
+  "unique-str": "kekprt"
+}

@@ -82,7 +82,13 @@ func Input(reader *bufio.Reader, question, dflt string, mandatory bool) string {
 }
 
 // Input returns input from the user in answer to the question.
-func InputWithValidation(reader *bufio.Reader, question, dflt string, mandatory bool, validation func(string, execute.Executor) (bool, string), executor execute.Executor) string {
+func InputWithValidation(
+	reader *bufio.Reader,
+	question,
+	dflt string,
+	mandatory bool,
+	validation func(string, execute.Executor) (bool, string),
+	executor execute.Executor) string {
 	for {
 		s := Input(reader, question, dflt, mandatory)
 		valid, msg := validation(s, executor)
