@@ -17,11 +17,11 @@ var UsageQuery = api_v1.PluginRequest{
 	Command: api_v1.CommandUsage,
 }
 
-func GetCobraCommand(plugin string, executor execute.Executor) *cobra.Command {
+func GetCobraCommand(plugin string, executor execute.Executor) (*cobra.Command, error) {
 	pluginPath := filepath.Join(goBinPath(), plugin)
 	usage, err := Call[api_v1.PluginUsageResponse](pluginPath, &UsageQuery, executor)
 	if err != nil {
-		cli.Fatalf(err.Error())
+		return nil, err
 	}
 	cc := cobra.Command{
 		Use:     usage.Use,
@@ -34,12 +34,15 @@ func GetCobraCommand(plugin string, executor execute.Executor) *cobra.Command {
 					cli.Fatalf("cannot initialize config: %v", err)
 				}
 			}
-			placeholders := placeholders.NewPlaceholders(cmd.Flags(), ".", "default", "", "")
+			placeholders, err := placeholders.NewPlaceholders(cmd.Flags(), ".", "default", "", "")
+			if err != nil {
+				cli.Fatalf("cannot initialize placeholders: %v", err)
+			}
 			response, err := Call[api_v1.PluginResponse](pluginPath, &api_v1.PluginRequest{
 				Command:      api_v1.CommandRun,
 				Args:         args,
 				Flags:        []api_v1.PluginFlag{},
-				Placeholders: placeholders,
+				Placeholders: *placeholders,
 			}, executor)
 			if err != nil {
 				cli.Fatalf(err.Error())
@@ -51,7 +54,7 @@ func GetCobraCommand(plugin string, executor execute.Executor) *cobra.Command {
 		},
 	}
 	cc.Flags().AddFlagSet(flag.ConfigFlagset())
-	return &cc
+	return &cc, nil
 }
 
 func initializeConfig(cmd *cobra.Command) error {

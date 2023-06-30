@@ -26,3 +26,11 @@ func TestHistory_ReturnErrorsAndOutput(t *testing.T) {
 	e.Output(&exec.Cmd{}, "", "output")
 	assert.Equal(t, []string{"error", "output"}, e.History())
 }
+
+func TestOutput_ReturnSetOutput(t *testing.T) {
+	e := utils.NewMockExecutor()
+	e.SetOutput("output")
+	r, err := e.Output(&exec.Cmd{}, "", "output")
+	assert.NoError(t, err)
+	assert.Equal(t, "output", r)
+}

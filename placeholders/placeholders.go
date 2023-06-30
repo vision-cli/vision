@@ -1,6 +1,7 @@
 package placeholders
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/spf13/pflag"
@@ -16,15 +17,18 @@ func getValueFromFlagSetOrConfig(flagSet *pflag.FlagSet, flagName string, config
 	return configFunc()
 }
 
-func NewProjectPlaceholders(flagSet *pflag.FlagSet, projectRoot, projectName string) api_v1.PluginPlaceholders {
+func NewProjectPlaceholders(flagSet *pflag.FlagSet,
+	projectRoot, projectName string) (*api_v1.PluginPlaceholders, error) {
 	return NewPlaceholders(flagSet, projectRoot, projectName, "", "")
 }
 
-func NewServicePlaceholders(flagSet *pflag.FlagSet, projectRoot, moduleName, serviceName string) api_v1.PluginPlaceholders {
+func NewServicePlaceholders(flagSet *pflag.FlagSet,
+	projectRoot, moduleName, serviceName string) (*api_v1.PluginPlaceholders, error) {
 	return NewPlaceholders(flagSet, projectRoot, config.ProjectName(), moduleName, serviceName)
 }
 
-func NewDefaultServicePlaceholders(flagSet *pflag.FlagSet, projectRoot, serviceName string) api_v1.PluginPlaceholders {
+func NewDefaultServicePlaceholders(flagSet *pflag.FlagSet,
+	projectRoot, serviceName string) (*api_v1.PluginPlaceholders, error) {
 	return NewPlaceholders(flagSet, projectRoot, config.ProjectName(), "", serviceName)
 }
 
@@ -32,7 +36,7 @@ func NewPlaceholders(flagSet *pflag.FlagSet,
 	rawProjectRoot,
 	rawProjectName,
 	rawServiceNamespace,
-	rawServiceName string) api_v1.PluginPlaceholders {
+	rawServiceName string) (*api_v1.PluginPlaceholders, error) {
 	// Project name is snake case for use as a variable
 	projectName := Snake(rawProjectName)
 
@@ -59,7 +63,7 @@ func NewPlaceholders(flagSet *pflag.FlagSet,
 	servicesDir := config.ServicesDirectory()
 
 	if remote == "" {
-		panic("remote cannot be empty, please provide a remote with the -r --remote flag or set it in the config file")
+		return nil, fmt.Errorf("remote cannot be empty, please provide a remote with the -r --remote flag or set it in the config file")
 	}
 
 	projectFqn := filepath.Join(remote, projectName)
@@ -67,7 +71,7 @@ func NewPlaceholders(flagSet *pflag.FlagSet,
 	graphqlServiceName := Snake(config.GraphqlName())
 	gatewayServiceName := Snake(config.GatewayName())
 
-	return api_v1.PluginPlaceholders{
+	return &api_v1.PluginPlaceholders{
 		// project
 		ProjectRoot:      rawProjectRoot,
 		ProjectName:      projectName,
@@ -96,5 +100,5 @@ func NewPlaceholders(flagSet *pflag.FlagSet,
 		InfraDirectory: config.InfraDirectory(),
 		// messaging
 		ProtoPackage: serviceNamespace + "." + rawServiceName + "." + version,
-	}
+	}, nil
 }

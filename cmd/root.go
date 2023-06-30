@@ -15,10 +15,11 @@ func init() {
 	p := plugins.GetPlugins()
 	osExecutor := execute.NewOsExecutor()
 	for _, pl := range p {
-		cobraCmd := plugins.GetCobraCommand(pl, osExecutor)
-		if cobraCmd != nil {
-			rootCmd.AddCommand(cobraCmd)
+		cobraCmd, err := plugins.GetCobraCommand(pl, osExecutor)
+		if err != nil {
+			cli.Warningf("cannot get cobra command %s: %v", pl, err)
 		}
+		rootCmd.AddCommand(cobraCmd)
 	}
 }
 
