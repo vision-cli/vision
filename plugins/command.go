@@ -8,13 +8,15 @@ import (
 	api_v1 "github.com/vision-cli/api/v1"
 	"github.com/vision-cli/vision/cli"
 	"github.com/vision-cli/vision/config"
+	"github.com/vision-cli/vision/execute"
 	"github.com/vision-cli/vision/flag"
 	"github.com/vision-cli/vision/placeholders"
 )
 
 func GetCobraCommand(plugin string) *cobra.Command {
 	pluginPath := filepath.Join(goBinPath(), plugin)
-	usage, err := Call[api_v1.PluginUsageResponse](pluginPath, &UsageQuery)
+	osExecutor := execute.NewOsExecutor()
+	usage, err := Call[api_v1.PluginUsageResponse](pluginPath, &UsageQuery, osExecutor)
 	if err != nil {
 		cli.Fatalf(err.Error())
 	}
@@ -35,7 +37,7 @@ func GetCobraCommand(plugin string) *cobra.Command {
 				Args:         args,
 				Flags:        []api_v1.PluginFlag{},
 				Placeholders: placeholders,
-			})
+			}, osExecutor)
 			if err != nil {
 				cli.Fatalf(err.Error())
 			}
