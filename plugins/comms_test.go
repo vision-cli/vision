@@ -13,12 +13,12 @@ import (
 func TestUnmarshal_WithValidInputProvided_ReturnsObject(t *testing.T) {
 	req := []byte(`{"Result":"result","Error":""}`)
 	result, err := plugins.Unmarshal[api_v1.PluginResponse](req)
+	require.NoError(t, err)
 	expected := api_v1.PluginResponse{
 		Result: "result",
 		Error:  "",
 	}
-	require.NoError(t, err)
-	assert.Equal(t, expected, result)
+	assert.Equal(t, &expected, result)
 }
 
 func TestUnmarshal_ReturnsErrorWhenInValidInputProvided(t *testing.T) {

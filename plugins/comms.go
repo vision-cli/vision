@@ -11,12 +11,12 @@ import (
 )
 
 func Unmarshal[T any](in []byte) (*T, error) {
-	var out *T
-	err := json.Unmarshal(in, out)
+	var out T
+	err := json.Unmarshal(in, &out)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	return &out, nil
 }
 
 func Marshal[T any](in *T) (string, error) {
@@ -35,11 +35,13 @@ func Call[T any](plugin string, request *api_v1.PluginRequest, executor execute.
 	}
 	cmd.Stdin = strings.NewReader(query)
 	response, err := executor.Output(cmd, ".", "calling plugin "+plugin)
+	println(response)
 	if err != nil {
 		return nil, fmt.Errorf("cannot run plugin %s", plugin)
 	}
 	out, err := Unmarshal[T]([]byte(response))
 	if err != nil {
+		println(err.Error())
 		// check if the response is an error
 		outerr, err := Unmarshal[api_v1.PluginResponse]([]byte(response))
 		if err != nil {

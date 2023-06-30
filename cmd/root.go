@@ -13,8 +13,9 @@ import (
 func init() {
 	rootCmd.AddCommand(config.RootCmd)
 	p := plugins.GetPlugins()
+	osExecutor := execute.NewOsExecutor()
 	for _, pl := range p {
-		cobraCmd := plugins.GetCobraCommand(pl)
+		cobraCmd := plugins.GetCobraCommand(pl, osExecutor)
 		if cobraCmd != nil {
 			rootCmd.AddCommand(cobraCmd)
 		}

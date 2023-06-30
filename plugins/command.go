@@ -13,13 +13,18 @@ import (
 	"github.com/vision-cli/vision/placeholders"
 )
 
-func GetCobraCommand(plugin string) *cobra.Command {
+var UsageQuery = api_v1.PluginRequest{
+	Command: api_v1.CommandUsage,
+}
+
+func GetCobraCommand(plugin string, executor execute.Executor) *cobra.Command {
 	pluginPath := filepath.Join(goBinPath(), plugin)
-	osExecutor := execute.NewOsExecutor()
-	usage, err := Call[api_v1.PluginUsageResponse](pluginPath, &UsageQuery, osExecutor)
+	println("calling usage")
+	usage, err := Call[api_v1.PluginUsageResponse](pluginPath, &UsageQuery, executor)
 	if err != nil {
 		cli.Fatalf(err.Error())
 	}
+	println("called usage")
 	cc := cobra.Command{
 		Use:     usage.Use,
 		Short:   usage.Short,
@@ -37,7 +42,7 @@ func GetCobraCommand(plugin string) *cobra.Command {
 				Args:         args,
 				Flags:        []api_v1.PluginFlag{},
 				Placeholders: placeholders,
-			}, osExecutor)
+			}, executor)
 			if err != nil {
 				cli.Fatalf(err.Error())
 			}

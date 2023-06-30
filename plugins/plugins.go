@@ -5,13 +5,8 @@ import (
 	"os/exec"
 	"strings"
 
-	api_v1 "github.com/vision-cli/api/v1"
 	"github.com/vision-cli/vision/cli"
 )
-
-var UsageQuery = api_v1.PluginRequest{
-	Command: api_v1.CommandUsage,
-}
 
 func GetPlugins() []string {
 	var plugins []string
