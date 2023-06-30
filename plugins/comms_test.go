@@ -1,6 +1,7 @@
 package plugins_test
 
 import (
+	"fmt"
 	"math"
 	"testing"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	api_v1 "github.com/vision-cli/api/v1"
 	"github.com/vision-cli/vision/plugins"
+	"github.com/vision-cli/vision/utils"
 )
 
 func TestUnmarshal_WithValidInputProvided_ReturnsObject(t *testing.T) {
@@ -42,4 +44,19 @@ func TestMarshal_WithInValidObject_ReturnsError(t *testing.T) {
 	impossible := math.Inf(1)
 	_, err := plugins.Marshal[float64](&impossible)
 	assert.Equal(t, "json: unsupported value: +Inf", err.Error())
+}
+
+func TestCall_WithInvalidObject_ReturnsMarshallError(t *testing.T) {
+	obj := api_v1.PluginRequest{
+		Command: "plugin",
+		Args: make([]string, 0),
+	}
+	exe := utils.NewMockExecutor()
+	plugin := "plugin1"
+	
+	expectedError := fmt.Sprintf("cannot marshal request for plugin %s: %s", plugin, "")
+
+	_, err := plugins.Call[api_v1.PluginRequest](plugin, &obj, exe)
+
+	assert.Equal(t, expectedError, err.Error())
 }

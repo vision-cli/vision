@@ -29,7 +29,7 @@ func Marshal[T any](in *T) (string, error) {
 
 func Call[T any](plugin string, request *api_v1.PluginRequest, executor execute.Executor) (*T, error) {
 	cmd := exec.Command(plugin)
-	query, err := Marshal(request)
+	query, err := Marshal(request) // <-- trying to break this one
 	if err != nil {
 		return nil, fmt.Errorf("cannot marshal request for plugin %s: %s", plugin, err.Error())
 	}
