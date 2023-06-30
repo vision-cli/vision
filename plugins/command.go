@@ -19,12 +19,10 @@ var UsageQuery = api_v1.PluginRequest{
 
 func GetCobraCommand(plugin string, executor execute.Executor) *cobra.Command {
 	pluginPath := filepath.Join(goBinPath(), plugin)
-	println("calling usage")
 	usage, err := Call[api_v1.PluginUsageResponse](pluginPath, &UsageQuery, executor)
 	if err != nil {
 		cli.Fatalf(err.Error())
 	}
-	println("called usage")
 	cc := cobra.Command{
 		Use:     usage.Use,
 		Short:   usage.Short,

@@ -35,13 +35,11 @@ func Call[T any](plugin string, request *api_v1.PluginRequest, executor execute.
 	}
 	cmd.Stdin = strings.NewReader(query)
 	response, err := executor.Output(cmd, ".", "calling plugin "+plugin)
-	println(response)
 	if err != nil {
 		return nil, fmt.Errorf("cannot run plugin %s", plugin)
 	}
 	out, err := Unmarshal[T]([]byte(response))
 	if err != nil {
-		println(err.Error())
 		// check if the response is an error
 		outerr, err := Unmarshal[api_v1.PluginResponse]([]byte(response))
 		if err != nil {
