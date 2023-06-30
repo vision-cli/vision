@@ -4,7 +4,7 @@ const (
 	uniqueStr       = "unique-str"
 	uniqueStrLen    = 6
 	namifyLen       = 20
-	ConfigFilename  = "jarvis"
+	ConfigFilename  = "vision"
 	configExtension = ".json"
 )
 

@@ -36,14 +36,14 @@ func GetPlugins() []string {
 
 func GetCobraCommand(plugin string) *cobra.Command {
 	pluginPath := filepath.Join(goBinPath(), plugin)
-	usageQuery, err := MarshalRequest(UsageQuery)
+	usageQuery, err := Marshal(UsageQuery)
 	if err != nil {
-		cli.Fatalf("Cannot marshal usage query for plugin %s", plugin)
+		cli.Fatalf("Cannot marshal usage query for plugin %s: %s", plugin, err.Error())
 	}
 	response := callPlugin(pluginPath, usageQuery)
-	usage, err := UnmarshalResponse[api_v1.PluginUsageResponse](response)
+	usage, err := Unmarshal[api_v1.PluginUsageResponse](response)
 	if err != nil {
-		cli.Fatalf("Cannot marshal usage query for plugin %s", plugin)
+		cli.Fatalf("Cannot marshal usage query for plugin %s: %s", plugin, err.Error())
 	}
 	cc := cobra.Command{
 		Use:     usage.Use,
@@ -55,7 +55,7 @@ func GetCobraCommand(plugin string) *cobra.Command {
 				cli.Fatalf("Cannot initialize config: %v", err)
 			}
 			placeholders := placeholders.NewPlaceholders(cmd.Flags(), ".", "default", "", "")
-			runQuery, err := MarshalRequest(api_v1.PluginRequest{
+			runQuery, err := Marshal(api_v1.PluginRequest{
 				Command:      api_v1.CommandRun,
 				Args:         args,
 				Flags:        []api_v1.PluginFlag{},
@@ -65,7 +65,7 @@ func GetCobraCommand(plugin string) *cobra.Command {
 				cli.Fatalf("Cannot marshal run query for plugin %s", plugin)
 			}
 			response := callPlugin(pluginPath, runQuery)
-			result, err := UnmarshalResponse[api_v1.PluginResponse](response)
+			result, err := Unmarshal[api_v1.PluginResponse](response)
 			if err != nil {
 				cli.Fatalf("Cannot unmarshal response from plugin %s", plugin)
 			}
@@ -79,7 +79,7 @@ func GetCobraCommand(plugin string) *cobra.Command {
 	return &cc
 }
 
-func UnmarshalResponse[T any](reqStr string) (T, error) {
+func Unmarshal[T any](reqStr string) (T, error) {
 	var req T
 	err := json.Unmarshal([]byte(reqStr), &req)
 	if err != nil {
@@ -88,7 +88,7 @@ func UnmarshalResponse[T any](reqStr string) (T, error) {
 	return req, nil
 }
 
-func MarshalRequest[T any](resp T) (string, error) {
+func Marshal[T any](resp T) (string, error) {
 	respStr, err := json.Marshal(resp)
 	if err != nil {
 		return "", err

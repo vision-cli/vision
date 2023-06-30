@@ -5,11 +5,13 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/vision-cli/vision/cli"
+	"github.com/vision-cli/vision/cmd/config"
 	"github.com/vision-cli/vision/execute"
 	"github.com/vision-cli/vision/plugins"
 )
 
 func init() {
+	rootCmd.AddCommand(config.RootCmd)
 	p := plugins.GetPlugins()
 	for _, pl := range p {
 		cobraCmd := plugins.GetCobraCommand(pl)

@@ -18,7 +18,7 @@ func TestRandSeq_CreatesCorrectLength(t *testing.T) {
 }
 
 func TestLoadConfig_SetsViperDictionary(t *testing.T) {
-	if err := LoadConfig(pflag.NewFlagSet("config", 1), false, "config_test", ""); err != nil {
+	if err := LoadConfig(pflag.NewFlagSet("config", 1), false, "./testdata/config_test", ""); err != nil {
 		assert.Fail(t, "LoadConfig failed")
 	}
 	assert.Equal(t, ProjectName(), "test")
