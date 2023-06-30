@@ -1,14 +1,12 @@
 package config
 
-import "github.com/spf13/viper"
-
 const (
 	viperInfraPrefix       = "infra"
 	viperInfraDirectoryKey = viperInfraPrefix + ".directory"
 )
 
 func InfraDirectory() string {
-	return viper.GetString(viperInfraDirectoryKey)
+	return v.GetString(viperInfraDirectoryKey)
 }
 
 func SetInfraDirectory(s string) {

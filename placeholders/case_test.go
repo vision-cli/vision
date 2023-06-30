@@ -53,4 +53,16 @@ func TestKebabCase(t *testing.T) {
 	}
 }
 
-// testing snake case is trivial ("_" instead of "-")
+func TestSnakeCase(t *testing.T) {
+	for _, test := range []caseTest{
+		{"word", "word"},
+		{"TwoWords", "two_words"},
+		{"two_words", "two_words"},
+		{"Only-% alpha \nNumeric!123", "only_alpha_numeric_123"},
+		{"123abC", "123_ab_c"},
+		{"can'tBe-apostrophe", "cant_be_apostrophe"},
+	} {
+		actual := Snake(test.input)
+		assert.Equal(t, test.expected, actual)
+	}
+}

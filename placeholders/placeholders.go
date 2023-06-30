@@ -11,8 +11,8 @@ import (
 )
 
 func getValueFromFlagSetOrConfig(flagSet *pflag.FlagSet, flagName string, configFunc func() string) string {
-	if flagSet.Changed(flagName) {
-		return flagSet.Lookup(flagName).Value.String()
+	if val, err := flagSet.GetString(flagName); err == nil && val != "" {
+		return val
 	}
 	return configFunc()
 }

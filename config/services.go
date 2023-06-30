@@ -1,7 +1,5 @@
 package config
 
-import "github.com/spf13/viper"
-
 const (
 	viperServicesPrefix              = "services"
 	viperServicesGraphqlKey          = viperServicesPrefix + ".graphql"
@@ -11,7 +9,7 @@ const (
 )
 
 func GraphqlName() string {
-	return viper.GetString(viperServicesGraphqlKey)
+	return v.GetString(viperServicesGraphqlKey)
 }
 
 func SetGraphqlName(s string) {
@@ -19,7 +17,7 @@ func SetGraphqlName(s string) {
 }
 
 func GatewayName() string {
-	return viper.GetString(viperServicesGatewayKey)
+	return v.GetString(viperServicesGatewayKey)
 }
 
 func SetGatewayName(s string) {
@@ -27,7 +25,7 @@ func SetGatewayName(s string) {
 }
 
 func DefaultNamespace() string {
-	return viper.GetString(viperDefaultServicesNamespaceKey)
+	return v.GetString(viperDefaultServicesNamespaceKey)
 }
 
 func SetDefaultNamespace(s string) {
@@ -35,7 +33,7 @@ func SetDefaultNamespace(s string) {
 }
 
 func ServicesDirectory() string {
-	return viper.GetString(viperServicesDirectoryKey)
+	return v.GetString(viperServicesDirectoryKey)
 }
 
 func SetServicesDirectory(s string) {

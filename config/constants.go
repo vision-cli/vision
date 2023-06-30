@@ -38,3 +38,27 @@ const (
 	FlagDeployment = "deployment"
 	FlagTemplate   = "template"
 )
+
+type DefaultConfig struct {
+	prompt   string
+	def      string
+	flagname string
+	setter   func(string)
+}
+
+var defaultConfigsWithFlags = []DefaultConfig{
+	{"Default remote (e.g. github.com/<company-name>/<project>):", "", FlagRemote, SetRemote},
+	{"Default deployment:", defaultDeployment, FlagDeployment, SetDeployment},
+	{"Default service namespace:", defaultDefaultNamespace, FlagNamespace, SetDefaultNamespace},
+	{"Default registry:", defaultRegistry, FlagRegistry, SetRegistry},
+	{"Default branch:", defaultBranch, FlagBranch, SetBranch},
+	{"Default api version:", defaultApiVersion, FlagApiVersion, SetApiVersion},
+}
+
+var defaultConfigs = []DefaultConfig{
+	{"Template version:", defaultTempalateVersion, "", SetTemplateVersion},
+	{"Default gateway service name:", defaultGatewayName, "", SetGatewayName},
+	{"Default graphql service name:", defaultGraphqlName, "", SetGraphqlName},
+	{"Default services directory:", defaultServicesDir, "", SetServicesDirectory},
+	{"Default infra directory:", defaultInfraDir, "", SetInfraDirectory},
+}

@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-
-	"github.com/spf13/viper"
 )
 
 const (
@@ -27,7 +25,7 @@ func cleanString(str string) string {
 }
 
 func namify(key string, maxLen int) string { //nolint:unparam // maxLen is used during testing
-	name := fmt.Sprintf("%s-%s-%s", cleanString(ProjectName()), key, viper.GetString(uniqueStr))
+	name := fmt.Sprintf("%s-%s-%s", cleanString(ProjectName()), key, v.GetString(uniqueStr))
 	if len(name) > namifyLen {
 		name = name[:maxLen]
 	}
@@ -43,7 +41,7 @@ func DefaultAzureResourceGroupName() string {
 }
 
 func AzureResourceGroup() string {
-	return viper.GetString(viperAzureResourceGroupKey)
+	return v.GetString(viperAzureResourceGroupKey)
 }
 
 func SetAzureResourceGroup(s string) {
@@ -55,7 +53,7 @@ func DefaultAzureLocation() string {
 }
 
 func AzureLocation() string {
-	return viper.GetString(viperAzureLocationKey)
+	return v.GetString(viperAzureLocationKey)
 }
 
 func SetAzureLocation(s string) {
@@ -67,7 +65,7 @@ func DefaultAzureStorageAccount() string {
 }
 
 func AzureStorageAccount() string {
-	return viper.GetString(viperAzureStorageAccountKey)
+	return v.GetString(viperAzureStorageAccountKey)
 }
 
 func SetAzureStorageAccount(s string) {
@@ -75,7 +73,7 @@ func SetAzureStorageAccount(s string) {
 }
 
 func AzureTenant() string {
-	return viper.GetString(viperAzureTennantKey)
+	return v.GetString(viperAzureTennantKey)
 }
 
 func SetAzureTenant(s string) {
@@ -87,7 +85,7 @@ func DefaultAzureKeyvault() string {
 }
 
 func AzureKeyvault() string {
-	return viper.GetString(viperAzureKeyvaultKey)
+	return v.GetString(viperAzureKeyvaultKey)
 }
 
 func SetAzureKeyvault(s string) {
@@ -99,7 +97,7 @@ func DefaultAzureAcr() string {
 }
 
 func AzureAcr() string {
-	return viper.GetString(viperAzureAcrNameKey)
+	return v.GetString(viperAzureAcrNameKey)
 }
 
 func SetAzureAcr(s string) {
@@ -107,7 +105,7 @@ func SetAzureAcr(s string) {
 }
 
 func AzureAcrLoginServer() string {
-	return viper.GetString(viperAzureAcrLoginServerKey)
+	return v.GetString(viperAzureAcrLoginServerKey)
 }
 
 func SetAzureAcrLoginServer(s string) {
@@ -115,5 +113,5 @@ func SetAzureAcrLoginServer(s string) {
 }
 
 func DefaultAzureApp() string {
-	return ProjectName() + "-" + viper.GetString(uniqueStr)
+	return ProjectName() + "-" + v.GetString(uniqueStr)
 }

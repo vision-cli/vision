@@ -1,9 +1,5 @@
 package config
 
-import (
-	"github.com/spf13/viper"
-)
-
 const (
 	viperProjectPrefix             = "project"
 	viperProjectNameKey            = viperProjectPrefix + ".name"
@@ -17,7 +13,7 @@ const (
 )
 
 func ProjectName() string {
-	return viper.GetString(viperProjectNameKey)
+	return v.GetString(viperProjectNameKey)
 }
 
 func SetProjectName(s string) {
@@ -25,7 +21,7 @@ func SetProjectName(s string) {
 }
 
 func TemplateVersion() string {
-	return viper.GetString(viperProjectTemplateVersionKey)
+	return v.GetString(viperProjectTemplateVersionKey)
 }
 
 func SetTemplateVersion(s string) {
@@ -33,7 +29,7 @@ func SetTemplateVersion(s string) {
 }
 
 func Provider() string {
-	return viper.GetString(viperProjectProviderKey)
+	return v.GetString(viperProjectProviderKey)
 }
 
 func SetProvider(s string) {
@@ -41,7 +37,7 @@ func SetProvider(s string) {
 }
 
 func Deployment() string {
-	return viper.GetString(viperProjectDeploymentKey)
+	return v.GetString(viperProjectDeploymentKey)
 }
 
 func SetDeployment(s string) {
@@ -49,7 +45,7 @@ func SetDeployment(s string) {
 }
 
 func Remote() string {
-	return viper.GetString(viperProjectRemoteKey)
+	return v.GetString(viperProjectRemoteKey)
 }
 
 func SetRemote(s string) {
@@ -57,7 +53,7 @@ func SetRemote(s string) {
 }
 
 func Registry() string {
-	return viper.GetString(viperProjectRegistryKey)
+	return v.GetString(viperProjectRegistryKey)
 }
 
 func SetRegistry(s string) {
@@ -65,7 +61,7 @@ func SetRegistry(s string) {
 }
 
 func Branch() string {
-	return viper.GetString(viperProjectBranchKey)
+	return v.GetString(viperProjectBranchKey)
 }
 
 func SetBranch(s string) {
@@ -73,7 +69,7 @@ func SetBranch(s string) {
 }
 
 func ApiVersion() string {
-	return viper.GetString(viperProjectApiVersionKey)
+	return v.GetString(viperProjectApiVersionKey)
 }
 
 func SetApiVersion(s string) {
