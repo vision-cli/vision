@@ -53,6 +53,38 @@ func TestReturnedCobraCommand_WithoutRequiredConfigAndRunSuccess_ReturnsSuccess(
 	assert.Equal(t, 2, len(te.History()))
 }
 
+func TestReturnedCobraCommand_WithRequiredConfigAndRunSuccess_OsExitNoConfigFile(t *testing.T) {
+	if os.Getenv("BE_CRASHER") == "1" {
+		te := utils.NewMockExecutor()
+		var usageRespWithConfig = `{
+			"Version":        "0.1.0",
+			"Use":            "project",
+			"Short":          "project short description",
+			"Long":           "project long description",
+			"Example":        "project example",
+			"Subcommands":    ["create", "delete"],
+			"Flags":          [],
+			"RequiresConfig": true
+		}`
+
+		te.SetOutput(usageRespWithConfig)
+		cmd, err := plugins.GetCobraCommand("projectexe", te)
+		require.NoError(t, err)
+
+		cmd.Run(cmd, []string{})
+		return
+	}
+	cmd := exec.Command(os.Args[0], "-test.run=TestReturnedCobraCommand_WithRequiredConfigAndRunSuccess_OsExitNoConfigFile")
+	cmd.Env = append(os.Environ(), "BE_CRASHER=1")
+	err := cmd.Run()
+	if e, ok := err.(*exec.ExitError); ok && !e.Success() {
+		assert.Equal(t, 1, e.ExitCode())
+		return
+	}
+	t.Fatalf("process ran with err %v, want exit status 1", err)
+
+}
+
 func TestReturnedCobraCommand_WithoutRequiredFlag_OsExit(t *testing.T) {
 	if os.Getenv("BE_CRASHER") == "1" {
 		te := utils.NewMockExecutor()
