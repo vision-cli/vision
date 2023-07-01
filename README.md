@@ -89,17 +89,17 @@ Create a yaml file with a description of your project's model. The schema and an
 - graphql model, queries and mutations
 
 ```
-jarvis project create -t <path to your model.yml>
+vision project create -t <path to your model.yml>
 ```
 
 ### Other Useful Commands
 
 | Command                                                    |                          Description                           |
 | :--------------------------------------------------------- | :------------------------------------------------------------: |
-| `jarvis service endpoints <serviceName> -n <namespace>`    |    generate rest endpoints in `grpc-gateway-api-config.yml`    |
-| `jarvis service update <serviceName> --rn <newName>`       | rename a service (default namespace, -n for other, -A for all) |
-| `jarvis service update -n <namespace> --mv <newNamespace>` |  move services to another namespace (can specify serviceName)  |
-| `jarvis project docs`                                      |         generate a table of contents and services list         |
+| `vision service endpoints <serviceName> -n <namespace>`    |    generate rest endpoints in `grpc-gateway-api-config.yml`    |
+| `vision service update <serviceName> --rn <newName>`       | rename a service (default namespace, -n for other, -A for all) |
+| `vision service update -n <namespace> --mv <newNamespace>` |  move services to another namespace (can specify serviceName)  |
+| `vision project docs`                                      |         generate a table of contents and services list         |
 
 ### Gateway Generation
 
@@ -109,7 +109,7 @@ This will generate the file {namespace}\_{serviceName}.pb.gw.go in the proto/ di
 Then generate your grpc gateway service to expose grpc over rest.
 
 ```
-jarvis gateway create <grpcGatewayServiceName> -n <namespace>
+vision gateway create <grpcGatewayServiceName> -n <namespace>
 ```
 
 ### Principles of Commands
