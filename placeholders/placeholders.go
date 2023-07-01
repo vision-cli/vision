@@ -2,6 +2,7 @@ package placeholders
 
 import (
 	"fmt"
+	"net/url"
 	"path/filepath"
 
 	"github.com/spf13/pflag"
@@ -66,10 +67,33 @@ func NewPlaceholders(flagSet *pflag.FlagSet,
 		return nil, fmt.Errorf("remote cannot be empty, please provide a remote with the -r --remote flag or set it in the config file")
 	}
 
-	projectFqn := filepath.Join(remote, projectName)
-	servicesFqn := filepath.Join(projectFqn, config.ServicesDirectory(), serviceNamespace)
+	projectFqn, err := url.JoinPath(remote, projectName)
+	if err != nil {
+		return nil, err
+	}
+	servicesFqn, err := url.JoinPath(projectFqn, config.ServicesDirectory(), serviceNamespace)
+	if err != nil {
+		return nil, err
+	}
+	libsfqn, err := url.JoinPath(projectFqn, "libs")
+	if err != nil {
+		return nil, err
+	}
+	servicefqn, err := url.JoinPath(servicesFqn, serviceName)
+	if err != nil {
+		return nil, err
+	}
+
 	graphqlServiceName := Snake(config.GraphqlName())
 	gatewayServiceName := Snake(config.GatewayName())
+	gatewayfqn, err := url.JoinPath(servicesFqn, gatewayServiceName)
+	if err != nil {
+		return nil, err
+	}
+	graphqlfqn, err := url.JoinPath(servicesFqn, graphqlServiceName)
+	if err != nil {
+		return nil, err
+	}
 
 	return &api_v1.PluginPlaceholders{
 		// project
@@ -85,16 +109,16 @@ func NewPlaceholders(flagSet *pflag.FlagSet,
 		ServicesFqn:        servicesFqn,
 		ServicesDirectory:  servicesDir,
 		GatewayServiceName: gatewayServiceName,
-		GatewayFqn:         filepath.Join(servicesFqn, gatewayServiceName),
+		GatewayFqn:         gatewayfqn,
 		GraphqlServiceName: graphqlServiceName,
-		GraphqlFqn:         filepath.Join(servicesFqn, graphqlServiceName),
-		LibsFqn:            filepath.Join(projectFqn, "libs"),
+		GraphqlFqn:         graphqlfqn,
+		LibsFqn:            libsfqn,
 		LibsDirectory:      filepath.Join(rawProjectRoot, "libs"),
 		// service
 		ServiceNamespace:          serviceNamespace,
 		ServiceVersionedNamespace: serviceNamespace + "." + version,
 		ServiceName:               serviceName,
-		ServiceFqn:                filepath.Join(servicesFqn, serviceName),
+		ServiceFqn:                servicefqn,
 		ServiceDirectory:          filepath.Join(projectDirectory, servicesDir, serviceNamespace, rawServiceName),
 		// infra
 		InfraDirectory: config.InfraDirectory(),
