@@ -11,6 +11,10 @@ import (
 	"github.com/vision-cli/vision/utils"
 )
 
+const (
+	stdinPass = "jarvis\ngithub.com/starkindustries\n\n\n\n\n\n\n\n\n\n\n"
+)
+
 func TestLoadConfig_SetsViperDictionary(t *testing.T) {
 	if err := LoadConfig(pflag.NewFlagSet("config", 1), false, "./testdata/config_test", ""); err != nil {
 		assert.Fail(t, "LoadConfig failed")
@@ -19,6 +23,7 @@ func TestLoadConfig_SetsViperDictionary(t *testing.T) {
 	assert.Equal(t, Remote(), "remote")
 	assert.Equal(t, TemplateVersion(), "v1")
 	assert.Equal(t, Deployment(), "standalone-graphql")
+	assert.Equal(t, v.GetString(uniqueStr), "kekprt")
 }
 
 func TestLoadConfig_NoConfigNotSilentUserDoesntCreate_ReturnError(t *testing.T) {
@@ -31,6 +36,89 @@ func TestLoadConfig_NoConfigNotSilentUserDoesntCreate_ReturnError(t *testing.T) 
 		if err := LoadConfig(pflag.NewFlagSet("config", 1), false, "./testdata/config_test", ""); err == nil {
 			assert.Fail(t, "Test should fail if user doesn't want to create config")
 		}
+	})
+}
+
+func TestLoadConfig_NoConfigSilent_FailsDueToMissingRemote(t *testing.T) {
+	oldv := v
+	defer func() { v = oldv }()
+	v = Persist(NewMockPersist())
+
+	oldstat := stat
+	defer func() { stat = oldstat }()
+	stat = func(name string) (os.FileInfo, error) {
+		return nil, os.ErrNotExist
+	}
+
+	if err := LoadConfig(pflag.NewFlagSet("config", 1), true, "./testdata/config_test", ""); err == nil {
+		assert.Fail(t, "Test should fail because user has not provided a remote")
+	}
+}
+
+func TestLoadConfig_NoConfigSilentWithRemote_CreatesDefaultConfig(t *testing.T) {
+	oldv := v
+	defer func() { v = oldv }()
+	v = Persist(NewMockPersist())
+
+	oldstat := stat
+	defer func() { stat = oldstat }()
+	stat = func(name string) (os.FileInfo, error) {
+		return nil, os.ErrNotExist
+	}
+
+	flagSet := pflag.NewFlagSet("config", 1)
+	flagSet.String(FlagRemote, "github.com/mycompany", "")
+
+	err := LoadConfig(flagSet, true, "./testdata/config_test", "")
+	require.NoError(t, err)
+	assert.Equal(t, Remote(), "github.com/mycompany")
+	assert.Equal(t, TemplateVersion(), "v1")
+	assert.Equal(t, Deployment(), "standalone-graphql")
+	assert.Equal(t, len(v.GetString(uniqueStr)), 6)
+}
+
+func TestLoadConfig_NoConfigNotSilent_CreatesDefaultConfig(t *testing.T) {
+	oldv := v
+	defer func() { v = oldv }()
+	v = Persist(NewMockPersist())
+
+	oldstat := stat
+	defer func() { stat = oldstat }()
+	stat = func(name string) (os.FileInfo, error) {
+		return nil, os.ErrNotExist
+	}
+
+	utils.WithMockStdio(t, "y\n"+stdinPass, func() {
+		err := LoadConfig(pflag.NewFlagSet("config", 1), false, "./testdata/config_test", "")
+		require.NoError(t, err)
+		assert.Equal(t, Remote(), "github.com/starkindustries")
+		assert.Equal(t, TemplateVersion(), "v1")
+		assert.Equal(t, Deployment(), "standalone-graphql")
+		assert.Equal(t, len(v.GetString(uniqueStr)), 6)
+	})
+}
+
+func TestLoadConfig_NoConfigNotSilentWithFlag_DoesntPromptAndSetsFlagValue(t *testing.T) {
+	oldv := v
+	defer func() { v = oldv }()
+	v = Persist(NewMockPersist())
+
+	oldstat := stat
+	defer func() { stat = oldstat }()
+	stat = func(name string) (os.FileInfo, error) {
+		return nil, os.ErrNotExist
+	}
+
+	flagSet := pflag.NewFlagSet("config", 1)
+	flagSet.String(FlagRemote, "github.com/ironman", "")
+
+	utils.WithMockStdio(t, "y\njarvis\n\n\n\n\n\n\n\n\n\n\n", func() {
+		err := LoadConfig(flagSet, false, "./testdata/config_test", "")
+		require.NoError(t, err)
+		assert.Equal(t, Remote(), "github.com/ironman")
+		assert.Equal(t, TemplateVersion(), "v1")
+		assert.Equal(t, Deployment(), "standalone-graphql")
+		assert.Equal(t, len(v.GetString(uniqueStr)), 6)
 	})
 }
 
@@ -102,10 +190,9 @@ func TestLoadDefaultConfig_SilentWithMissingDefaults_ReturnsError(t *testing.T) 
 func TestLoadDefaultConfig_NotSilent_SetsAllConfig(t *testing.T) {
 	old := v
 	defer func() { v = old }()
-	m := NewMockPersist()
-	v = Persist(m)
+	v = Persist(NewMockPersist())
 
-	utils.WithMockStdio(t, "jarvis\ngithub.com/starkindustries\n\n\n\n\n\n\n\n\n\n\n", func() {
+	utils.WithMockStdio(t, stdinPass, func() {
 		reader := bufio.NewReader(os.Stdin)
 		flagSet := pflag.NewFlagSet("config", 1)
 		err := loadDefaultConfig(flagSet, false, "configfile", "projectname", reader)

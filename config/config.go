@@ -72,7 +72,6 @@ func genericSetter(reader *bufio.Reader, prompt, def string, slient bool, setter
 		setter(def)
 	} else {
 		ans := cli.Input(reader, prompt, def, true)
-		println(prompt + " " + ans)
 		setter(ans)
 	}
 }
