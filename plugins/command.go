@@ -29,15 +29,14 @@ func GetCobraCommand(plugin string, executor execute.Executor) (*cobra.Command, 
 		Long:    usage.Long,
 		Example: usage.Example,
 		Run: func(cmd *cobra.Command, args []string) {
-			p := &api_v1.PluginPlaceholders{}
 			if usage.RequiresConfig {
 				if err := initializeConfig(cmd); err != nil {
 					cli.Fatalf("cannot initialize config: %v", err)
 				}
-				p, err = placeholders.NewPlaceholders(cmd.Flags(), ".", "default", "", "")
-				if err != nil {
-					cli.Fatalf("cannot initialize placeholders: %v", err)
-				}
+			}
+			p, err := placeholders.NewPlaceholders(cmd.Flags(), ".", "default", "", "")
+			if err != nil {
+				cli.Fatalf("cannot initialize placeholders: %v", err)
 			}
 			response, err := Call[api_v1.PluginResponse](pluginPath, &api_v1.PluginRequest{
 				Command:      api_v1.CommandRun,
