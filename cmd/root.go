@@ -4,9 +4,9 @@ import (
 	"errors"
 
 	"github.com/spf13/cobra"
+	"github.com/vision-cli/common/execute"
 	"github.com/vision-cli/vision/cli"
 	"github.com/vision-cli/vision/cmd/config"
-	"github.com/vision-cli/vision/execute"
 	"github.com/vision-cli/vision/plugins"
 )
 

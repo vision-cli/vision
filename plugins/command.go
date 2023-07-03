@@ -6,9 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 	api_v1 "github.com/vision-cli/api/v1"
+	"github.com/vision-cli/common/execute"
 	"github.com/vision-cli/vision/cli"
 	"github.com/vision-cli/vision/config"
-	"github.com/vision-cli/vision/execute"
 	"github.com/vision-cli/vision/flag"
 	"github.com/vision-cli/vision/placeholders"
 )

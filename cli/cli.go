@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/vision-cli/vision/execute"
+	"github.com/vision-cli/common/execute"
 )
 
 const (
