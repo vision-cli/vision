@@ -4,18 +4,18 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/vision-cli/vision/utils"
+	"github.com/vision-cli/common/mocks"
 )
 
 func TestCheckTools_MustFindGo(t *testing.T) {
-	e := utils.NewMockExecutor()
-	err := checkTools(e)
+	e := mocks.NewMockExecutor()
+	err := checkTools(&e)
 	require.Error(t, err)
 }
 
 func TestCheckTools_PassIfFindGo(t *testing.T) {
-	e := utils.NewMockExecutor()
+	e := mocks.NewMockExecutor()
 	e.AddCommand("go")
-	err := checkTools(e)
+	err := checkTools(&e)
 	require.NoError(t, err)
 }

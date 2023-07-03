@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/vision-cli/vision/utils"
+	"github.com/vision-cli/common/mocks"
 )
 
 const (
@@ -27,7 +27,7 @@ func TestLoadConfig_SetsViperDictionary(t *testing.T) {
 }
 
 func TestLoadConfig_NoConfigNotSilentUserDoesntCreate_ReturnError(t *testing.T) {
-	utils.WithMockStdio(t, "n\n", func() {
+	mocks.WithMockStdio(t, "n\n", func() {
 		old := stat
 		defer func() { stat = old }()
 		stat = func(name string) (os.FileInfo, error) {
@@ -88,7 +88,7 @@ func TestLoadConfig_NoConfigNotSilent_CreatesDefaultConfig(t *testing.T) {
 		return nil, os.ErrNotExist
 	}
 
-	utils.WithMockStdio(t, "y\n"+stdinPass, func() {
+	mocks.WithMockStdio(t, "y\n"+stdinPass, func() {
 		err := LoadConfig(pflag.NewFlagSet("config", 1), false, "./testdata/config_test", "")
 		require.NoError(t, err)
 		assert.Equal(t, Remote(), "github.com/starkindustries")
@@ -112,7 +112,7 @@ func TestLoadConfig_NoConfigNotSilentWithFlag_DoesntPromptAndSetsFlagValue(t *te
 	flagSet := pflag.NewFlagSet("config", 1)
 	flagSet.String(FlagRemote, "github.com/ironman", "")
 
-	utils.WithMockStdio(t, "y\njarvis\n\n\n\n\n\n\n\n\n\n\n", func() {
+	mocks.WithMockStdio(t, "y\njarvis\n\n\n\n\n\n\n\n\n\n\n", func() {
 		err := LoadConfig(flagSet, false, "./testdata/config_test", "")
 		require.NoError(t, err)
 		assert.Equal(t, Remote(), "github.com/ironman")
@@ -129,7 +129,7 @@ func TestGenericSetter_SetsDefaultWhenSilent(t *testing.T) {
 }
 
 func TestGenericSetter_PromptsAndSetsUserInputWhenNotSilent(t *testing.T) {
-	utils.WithMockStdio(t, "anothertest\n", func() {
+	mocks.WithMockStdio(t, "anothertest\n", func() {
 		reader := bufio.NewReader(os.Stdin)
 		genericSetter(reader, "", "test", false, func(val string) {
 			assert.Equal(t, val, "anothertest")
@@ -140,27 +140,30 @@ func TestGenericSetter_PromptsAndSetsUserInputWhenNotSilent(t *testing.T) {
 func TestMustSetWithFlag_PrioritisesFlag(t *testing.T) {
 	flagSet := pflag.NewFlagSet("config", 1)
 	flagSet.String("exampleflag", "flagoverride", "")
-	mustSetWithFlag(bufio.NewReader(os.Stdin), "", "defaultval", false, flagSet, "exampleflag", func(val string) {
+	err := mustSetWithFlag(bufio.NewReader(os.Stdin), "", "defaultval", false, flagSet, "exampleflag", func(val string) {
 		assert.Equal(t, val, "flagoverride")
 	})
+	require.NoError(t, err)
 }
 
 func TestMustSetWithFlag_UsesDefaultIfSilentAndNoFlag(t *testing.T) {
 	flagSet := pflag.NewFlagSet("config", 1)
 	flagSet.String("exampleflag", "", "")
-	mustSetWithFlag(bufio.NewReader(os.Stdin), "", "defaultval", true, flagSet, "exampleflag", func(val string) {
+	err := mustSetWithFlag(bufio.NewReader(os.Stdin), "", "defaultval", true, flagSet, "exampleflag", func(val string) {
 		assert.Equal(t, val, "defaultval")
 	})
+	require.NoError(t, err)
 }
 
 func TestMustSetWithFlag_PromptsWithDefaultIfNotSilentAndNoFlag(t *testing.T) {
-	utils.WithMockStdio(t, "anothertest\n", func() {
+	mocks.WithMockStdio(t, "anothertest\n", func() {
 		reader := bufio.NewReader(os.Stdin)
 		flagSet := pflag.NewFlagSet("config", 1)
 		flagSet.String("exampleflag", "", "")
-		mustSetWithFlag(reader, "", "defaultval", false, flagSet, "exampleflag", func(val string) {
+		err := mustSetWithFlag(reader, "", "defaultval", false, flagSet, "exampleflag", func(val string) {
 			assert.Equal(t, val, "anothertest")
 		})
+		require.NoError(t, err)
 	})
 }
 
@@ -192,7 +195,7 @@ func TestLoadDefaultConfig_NotSilent_SetsAllConfig(t *testing.T) {
 	defer func() { v = old }()
 	v = Persist(NewMockPersist())
 
-	utils.WithMockStdio(t, stdinPass, func() {
+	mocks.WithMockStdio(t, stdinPass, func() {
 		reader := bufio.NewReader(os.Stdin)
 		flagSet := pflag.NewFlagSet("config", 1)
 		err := loadDefaultConfig(flagSet, false, "configfile", "projectname", reader)

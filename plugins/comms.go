@@ -1,35 +1,18 @@
 package plugins
 
 import (
-	"encoding/json"
 	"fmt"
 	"os/exec"
 	"strings"
 
 	api_v1 "github.com/vision-cli/api/v1"
-	"github.com/vision-cli/vision/execute"
+	"github.com/vision-cli/common/execute"
+	"github.com/vision-cli/common/marshal"
 )
-
-func Unmarshal[T any](in []byte) (*T, error) {
-	var out T
-	err := json.Unmarshal(in, &out)
-	if err != nil {
-		return nil, err
-	}
-	return &out, nil
-}
-
-func Marshal[T any](in *T) (string, error) {
-	out, err := json.Marshal(in)
-	if err != nil {
-		return "", err
-	}
-	return string(out), nil
-}
 
 func Call[T any](plugin string, request *api_v1.PluginRequest, executor execute.Executor) (*T, error) {
 	cmd := exec.Command(plugin)
-	query, err := Marshal(request)
+	query, err := marshal.Marshal(request)
 	if err != nil {
 		return nil, fmt.Errorf("cannot marshal request for plugin %s: %s", plugin, err.Error())
 	}
@@ -38,10 +21,10 @@ func Call[T any](plugin string, request *api_v1.PluginRequest, executor execute.
 	if err != nil {
 		return nil, fmt.Errorf("cannot run plugin %s", plugin)
 	}
-	out, err := Unmarshal[T]([]byte(response))
+	out, err := marshal.Unmarshal[T](response)
 	if err != nil {
 		// check if the response is an error
-		outerr, err := Unmarshal[api_v1.PluginResponse]([]byte(response))
+		outerr, err := marshal.Unmarshal[api_v1.PluginResponse](response)
 		if err != nil {
 			return nil, fmt.Errorf("cannot unmarshal response from plugin %s: %s", plugin, err.Error())
 		}
@@ -51,5 +34,5 @@ func Call[T any](plugin string, request *api_v1.PluginRequest, executor execute.
 		return nil,
 			fmt.Errorf("did not get expected result type from %s:, got PluginResponse with result %s", plugin, outerr.Result)
 	}
-	return out, nil
+	return &out, nil
 }

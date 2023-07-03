@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/pflag"
 
 	api_v1 "github.com/vision-cli/api/v1"
+	"github.com/vision-cli/common/cases"
 	"github.com/vision-cli/vision/config"
 )
 
@@ -39,13 +40,13 @@ func NewPlaceholders(flagSet *pflag.FlagSet,
 	rawServiceNamespace,
 	rawServiceName string) (*api_v1.PluginPlaceholders, error) {
 	// Project name is snake case for use as a variable
-	projectName := Snake(rawProjectName)
+	projectName := cases.Snake(rawProjectName)
 
 	// Project directory is kebab case for use as a folder name
-	projectDirectory := Kebab(rawProjectName)
+	projectDirectory := cases.Kebab(rawProjectName)
 
 	// Service name is snake case for use as a variable
-	serviceName := Snake(rawServiceName)
+	serviceName := cases.Snake(rawServiceName)
 
 	// Service namespace is (in priority order): passed parameter, flag value, default value
 	serviceNamespace := rawServiceNamespace
@@ -84,8 +85,8 @@ func NewPlaceholders(flagSet *pflag.FlagSet,
 		return nil, err
 	}
 
-	graphqlServiceName := Snake(config.GraphqlName())
-	gatewayServiceName := Snake(config.GatewayName())
+	graphqlServiceName := cases.Snake(config.GraphqlName())
+	gatewayServiceName := cases.Snake(config.GatewayName())
 	gatewayfqn, err := url.JoinPath(servicesFqn, gatewayServiceName)
 	if err != nil {
 		return nil, err

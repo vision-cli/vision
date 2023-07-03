@@ -8,9 +8,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vision-cli/common/mocks"
 	"github.com/vision-cli/vision/config"
 	"github.com/vision-cli/vision/plugins"
-	"github.com/vision-cli/vision/utils"
 )
 
 var usageResp = `{
@@ -25,8 +25,8 @@ var usageResp = `{
 }`
 
 func TestGetCobraCommand_WithValidUsageResponse_ReturnsCobraCommand(t *testing.T) {
-	te := utils.NewMockExecutor()
-	cmd := GetGoodCmd(t, te)
+	te := mocks.NewMockExecutor()
+	cmd := GetGoodCmd(t, &te)
 	assert.Equal(t, "project", cmd.Use)
 	assert.Equal(t, "project", cmd.Use)
 	assert.Equal(t, "project short description", cmd.Short)
@@ -34,18 +34,18 @@ func TestGetCobraCommand_WithValidUsageResponse_ReturnsCobraCommand(t *testing.T
 }
 
 func TestGetCobraCommand_WithInvalidUsageResponse_ReturnsError(t *testing.T) {
-	te := utils.NewMockExecutor()
+	te := mocks.NewMockExecutor()
 	te.SetOutput("X" + usageResp)
-	_, err := plugins.GetCobraCommand("projectexe", te)
+	_, err := plugins.GetCobraCommand("projectexe", &te)
 	require.Error(t, err)
 }
 
 func TestReturnedCobraCommand_WithoutRequiredConfigAndRunSuccess_ReturnsSuccess(t *testing.T) {
-	te := utils.NewMockExecutor()
-	cmd := GetGoodCmd(t, te)
+	te := mocks.NewMockExecutor()
+	cmd := GetGoodCmd(t, &te)
 
 	te.SetOutput(`{"Result":"Success","Error":""}`)
-	res := utils.WithMockStdout(t, func() {
+	res := mocks.WithMockStdout(t, func() {
 		cmd.Run(cmd, []string{})
 	})
 
@@ -55,7 +55,7 @@ func TestReturnedCobraCommand_WithoutRequiredConfigAndRunSuccess_ReturnsSuccess(
 
 func TestReturnedCobraCommand_WithRequiredConfigAndRunSuccess_OsExitNoConfigFile(t *testing.T) {
 	if os.Getenv("BE_CRASHER") == "1" {
-		te := utils.NewMockExecutor()
+		te := mocks.NewMockExecutor()
 		var usageRespWithConfig = `{
 			"Version":        "0.1.0",
 			"Use":            "project",
@@ -68,7 +68,7 @@ func TestReturnedCobraCommand_WithRequiredConfigAndRunSuccess_OsExitNoConfigFile
 		}`
 
 		te.SetOutput(usageRespWithConfig)
-		cmd, err := plugins.GetCobraCommand("projectexe", te)
+		cmd, err := plugins.GetCobraCommand("projectexe", &te)
 		require.NoError(t, err)
 
 		cmd.Run(cmd, []string{})
@@ -87,8 +87,8 @@ func TestReturnedCobraCommand_WithRequiredConfigAndRunSuccess_OsExitNoConfigFile
 
 func TestReturnedCobraCommand_WithoutRequiredFlag_OsExit(t *testing.T) {
 	if os.Getenv("BE_CRASHER") == "1" {
-		te := utils.NewMockExecutor()
-		cmd := GetBadCmd(t, te)
+		te := mocks.NewMockExecutor()
+		cmd := GetBadCmd(t, &te)
 		cmd.Run(cmd, []string{})
 		return
 	}
@@ -104,8 +104,8 @@ func TestReturnedCobraCommand_WithoutRequiredFlag_OsExit(t *testing.T) {
 
 func TestReturnedCobraCommand_WithoutRequiredConfigAndCallFailure_OsExit(t *testing.T) {
 	if os.Getenv("BE_CRASHER") == "1" {
-		te := utils.NewMockExecutor()
-		cmd := GetGoodCmd(t, te)
+		te := mocks.NewMockExecutor()
+		cmd := GetGoodCmd(t, &te)
 		te.SetOutput(`X{"Result":"Success","Error":""}`)
 		cmd.Run(cmd, []string{})
 		return
@@ -122,8 +122,8 @@ func TestReturnedCobraCommand_WithoutRequiredConfigAndCallFailure_OsExit(t *test
 
 func TestReturnedCobraCommand_WithoutRequiredConfigAndCallSuccessButMessageError_OsExit(t *testing.T) {
 	if os.Getenv("BE_CRASHER") == "1" {
-		te := utils.NewMockExecutor()
-		cmd := GetGoodCmd(t, te)
+		te := mocks.NewMockExecutor()
+		cmd := GetGoodCmd(t, &te)
 		te.SetOutput(`{"Result":"","Error":"Error message"}`)
 		cmd.Run(cmd, []string{})
 		return
@@ -138,15 +138,16 @@ func TestReturnedCobraCommand_WithoutRequiredConfigAndCallSuccessButMessageError
 	t.Fatalf("process ran with err %v, want exit status 1", err)
 }
 
-func GetGoodCmd(t *testing.T, te *utils.MockExecutor) *cobra.Command {
+func GetGoodCmd(t *testing.T, te *mocks.MockExecutor) *cobra.Command {
 	t.Helper()
 	cmd := GetBadCmd(t, te)
-	cmd.Flags().Lookup(config.FlagRemote).Value.Set("github.com/mycompany")
+	err := cmd.Flags().Lookup(config.FlagRemote).Value.Set("github.com/mycompany")
+	require.NoError(t, err)
 	cmd.Flags().Lookup(config.FlagRemote).Changed = true
 	return cmd
 }
 
-func GetBadCmd(t *testing.T, te *utils.MockExecutor) *cobra.Command {
+func GetBadCmd(t *testing.T, te *mocks.MockExecutor) *cobra.Command {
 	t.Helper()
 	te.SetOutput(usageResp)
 	cmd, err := plugins.GetCobraCommand("projectexe", te)
