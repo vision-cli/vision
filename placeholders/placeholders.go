@@ -96,6 +96,8 @@ func NewPlaceholders(flagSet *pflag.FlagSet,
 		return nil, err
 	}
 
+	deployment := config.Deployment()
+
 	return &api_v1.PluginPlaceholders{
 		// project
 		ProjectRoot:      rawProjectRoot,
@@ -125,5 +127,7 @@ func NewPlaceholders(flagSet *pflag.FlagSet,
 		InfraDirectory: config.InfraDirectory(),
 		// messaging
 		ProtoPackage: serviceNamespace + "." + rawServiceName + "." + version,
+		// graphql
+		Deployment: deployment,
 	}, nil
 }
