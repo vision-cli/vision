@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/vision-cli/common/execute"
+	cc "github.com/vision-cli/common/plugins"
 	"github.com/vision-cli/vision/cli"
 	"github.com/vision-cli/vision/cmd/config"
 	"github.com/vision-cli/vision/plugins"
@@ -12,8 +13,11 @@ import (
 
 func init() {
 	rootCmd.AddCommand(config.RootCmd)
-	p := plugins.GetPlugins()
 	osExecutor := execute.NewOsExecutor()
+	p, err := cc.GetPlugins(osExecutor)
+	if err != nil {
+		cli.Warningf("cannot get plugins: %v", err)
+	}
 	for _, pl := range p {
 		cobraCmd, err := plugins.GetCobraCommand(pl, osExecutor)
 		if err != nil {
