@@ -35,7 +35,7 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
-	github.com/vision-cli/api v0.3.0
+	github.com/vision-cli/api v0.4.0
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/term v0.9.0 // indirect
 )
