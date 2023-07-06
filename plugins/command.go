@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	api_v1 "github.com/vision-cli/api/v1"
+	"github.com/vision-cli/common/comms"
 	"github.com/vision-cli/common/execute"
 	"github.com/vision-cli/vision/cli"
 	"github.com/vision-cli/vision/config"
@@ -18,8 +19,7 @@ var UsageQuery = api_v1.PluginRequest{
 }
 
 func GetCobraCommand(plugin string, executor execute.Executor) (*cobra.Command, error) {
-	pluginPath := filepath.Join(goBinPath(), plugin)
-	usage, err := Call[api_v1.PluginUsageResponse](pluginPath, &UsageQuery, executor)
+	usage, err := comms.Call[api_v1.PluginUsageResponse](plugin, &UsageQuery, executor)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func GetCobraCommand(plugin string, executor execute.Executor) (*cobra.Command, 
 			if err != nil {
 				cli.Fatalf("cannot initialize placeholders: %v", err)
 			}
-			response, err := Call[api_v1.PluginResponse](pluginPath, &api_v1.PluginRequest{
+			response, err := comms.Call[api_v1.PluginResponse](plugin, &api_v1.PluginRequest{
 				Command:      api_v1.CommandRun,
 				Args:         args,
 				Flags:        []api_v1.PluginFlag{},
