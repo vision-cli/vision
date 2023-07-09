@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vision-cli/common/mocks"
+	commonPlugins "github.com/vision-cli/common/plugins"
 	"github.com/vision-cli/vision/config"
 	"github.com/vision-cli/vision/plugins"
 )
@@ -24,6 +25,12 @@ var usageResp = `{
 	"RequiresConfig": false
 }`
 
+var projectexe = commonPlugins.Plugin{
+	Name:            "projectexe",
+	PluginPath:      "projectexe",
+	InternalCommand: nil,
+}
+
 func TestGetCobraCommand_WithValidUsageResponse_ReturnsCobraCommand(t *testing.T) {
 	te := mocks.NewMockExecutor()
 	cmd := GetGoodCmd(t, &te)
@@ -36,7 +43,7 @@ func TestGetCobraCommand_WithValidUsageResponse_ReturnsCobraCommand(t *testing.T
 func TestGetCobraCommand_WithInvalidUsageResponse_ReturnsError(t *testing.T) {
 	te := mocks.NewMockExecutor()
 	te.SetOutput("X" + usageResp)
-	_, err := plugins.GetCobraCommand("projectexe", &te)
+	_, err := plugins.GetCobraCommand(projectexe, &te)
 	require.Error(t, err)
 }
 
@@ -68,7 +75,7 @@ func TestReturnedCobraCommand_WithRequiredConfigAndRunSuccess_OsExitNoConfigFile
 		}`
 
 		te.SetOutput(usageRespWithConfig)
-		cmd, err := plugins.GetCobraCommand("projectexe", &te)
+		cmd, err := plugins.GetCobraCommand(projectexe, &te)
 		require.NoError(t, err)
 
 		cmd.Run(cmd, []string{})
@@ -150,7 +157,7 @@ func GetGoodCmd(t *testing.T, te *mocks.MockExecutor) *cobra.Command {
 func GetBadCmd(t *testing.T, te *mocks.MockExecutor) *cobra.Command {
 	t.Helper()
 	te.SetOutput(usageResp)
-	cmd, err := plugins.GetCobraCommand("projectexe", te)
+	cmd, err := plugins.GetCobraCommand(projectexe, te)
 	require.NoError(t, err)
 	return cmd
 }

@@ -8,6 +8,7 @@ import (
 	api_v1 "github.com/vision-cli/api/v1"
 	"github.com/vision-cli/common/comms"
 	"github.com/vision-cli/common/execute"
+	"github.com/vision-cli/common/plugins"
 	"github.com/vision-cli/vision/cli"
 	"github.com/vision-cli/vision/config"
 	"github.com/vision-cli/vision/flag"
@@ -18,7 +19,7 @@ var UsageQuery = api_v1.PluginRequest{
 	Command: api_v1.CommandUsage,
 }
 
-func GetCobraCommand(plugin string, executor execute.Executor) (*cobra.Command, error) {
+func GetCobraCommand(plugin plugins.Plugin, executor execute.Executor) (*cobra.Command, error) {
 	usage, err := comms.Call[api_v1.PluginUsageResponse](plugin, &UsageQuery, executor)
 	if err != nil {
 		return nil, err
