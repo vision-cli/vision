@@ -21,7 +21,7 @@ func init() {
 	for _, pl := range p {
 		cobraCmd, err := plugins.GetCobraCommand(pl, osExecutor)
 		if err != nil {
-			cli.Warningf("cannot get cobra command %s: %v", pl, err)
+			cli.Warningf("cannot get cobra command %s: %v", pl.Name, err)
 		}
 		rootCmd.AddCommand(cobraCmd)
 	}
