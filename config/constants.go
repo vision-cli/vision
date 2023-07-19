@@ -15,7 +15,6 @@ const (
 	defaultDefaultNamespace = "default"
 	defaultServicesDir      = "services"
 	defaultInfraDir         = "infra"
-	defaultRegistry         = "gcr.io"
 	defaultBranch           = "master"
 	defaultApiVersion       = "v1"
 	defaultDeployment       = DeployStandaloneGraphql
@@ -23,7 +22,6 @@ const (
 
 const (
 	DeployStandaloneGraphql = "standalone-graphql"
-	DeployStandaloneGateway = "standalone-gateway"
 	DeployPlatform          = "platform"
 )
 
@@ -50,7 +48,7 @@ var defaultConfigsWithFlags = []DefaultConfig{
 	{"Default remote (e.g. github.com/<company-name>/<project>):", "", FlagRemote, SetRemote},
 	{"Default deployment:", defaultDeployment, FlagDeployment, SetDeployment},
 	{"Default service namespace:", defaultDefaultNamespace, FlagNamespace, SetDefaultNamespace},
-	{"Default registry:", defaultRegistry, FlagRegistry, SetRegistry},
+	{"Default registry (e.g. gcr.io):", "", FlagRegistry, SetRegistry},
 	{"Default branch:", defaultBranch, FlagBranch, SetBranch},
 	{"Default api version:", defaultApiVersion, FlagApiVersion, SetApiVersion},
 }

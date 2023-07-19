@@ -34,9 +34,12 @@ var rootCmd = &cobra.Command{
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		return checkTools(execute.NewOsExecutor())
 	},
-	Example: `Run the following command to create a new project
+	Example: `You need to create a seed project in the cloud you want before using Vision for the fisrt time.
+The seed project will be used to store terraform state and hold the container registry for your microservices.
+	
+Run the following command to create a new project
 
-  vision project create myproject -d github.com/myorg/myproject
+  vision project create myproject -r github.com/myorg/myproject -g gcr.io/myproject
 
 This will create a folder called myproject with the standard vision folder structure and a default config file.
 There is a powerful option to create a project from a template model using
@@ -51,7 +54,7 @@ Once you have created a project, navigate to the project folder and create a mic
 This will create a folder called myservice with the standard vision folder structure for a microservice.
 Create a microservice platform for a cloud provider, for example creating an Azure platform using
 
-  vision infra create azure
+  vision infra create azure -d standalone-graphql
 `,
 }
 

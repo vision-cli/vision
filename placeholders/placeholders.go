@@ -40,7 +40,11 @@ func NewPlaceholders(flagSet *pflag.FlagSet,
 	rawServiceNamespace,
 	rawServiceName string) (*api_v1.PluginPlaceholders, error) {
 	// Project name is snake case for use as a variable
-	projectName := cases.Snake(rawProjectName)
+	projectName := cases.Kebab(rawProjectName)
+	// replace the raw project name if there is a config project name
+	if config.ProjectName() != "" {
+		projectName = cases.Kebab(config.ProjectName())
+	}
 
 	// Project directory is kebab case for use as a folder name
 	projectDirectory := cases.Kebab(rawProjectName)

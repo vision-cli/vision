@@ -44,12 +44,12 @@ func ConfigFlagset() *pflag.FlagSet {
 	conf := pflag.NewFlagSet("config", 1)
 	conf.StringP(config.FlagRemote, "r", config.Remote(), "remote url for project repo")
 	conf.StringP(config.FlagBranch, "b", config.Branch(), "default branch in the project repo")
-	conf.StringP(config.FlagRegistry, "g", config.Registry(), "URL for image registry")
+	conf.StringP(config.FlagRegistry, "g", config.Registry(), "container registry")
 	conf.StringP(config.FlagNamespace, "n", config.DefaultNamespace(), "default namespace to use")
 	conf.StringP(config.FlagApiVersion, "v", config.ApiVersion(), "api version to use")
 	conf.StringP(config.FlagTemplate, "t", "", "template to use")
 	conf.StringP(config.FlagDeployment, "d", config.Deployment(),
-		fmt.Sprintf("deployment pattern to use [%s, %s, %s]", config.DeployPlatform, config.DeployStandaloneGraphql, config.DeployStandaloneGateway))
+		fmt.Sprintf("deployment pattern to use [%s, %s, %s]", config.DeployPlatform, config.DeployStandaloneGraphql))
 	conf.Bool(config.FlagSilent, false, "use default values for all flags and dont ask questions")
 	conf.Bool(config.FlagForce, false, "overwrite without asking questions")
 	return conf

@@ -80,10 +80,6 @@ func IsDeploymentStandaloneGraphql() bool {
 	return Deployment() == DeployStandaloneGraphql
 }
 
-func IsDeploymentStandaloneGateway() bool {
-	return Deployment() == DeployStandaloneGateway
-}
-
 func IsDeploymentPlatform() bool {
 	return Deployment() == DeployPlatform
 }
