@@ -115,3 +115,7 @@ func exists(path string) bool {
 	// other errors or nil imply existence (e.g. ErrPermission)
 	return !(errors.Is(err, os.ErrNotExist) || errors.Is(err, os.ErrInvalid))
 }
+
+func UniqueStr() string {
+	return v.GetString(uniqueStr)
+}

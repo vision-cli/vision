@@ -112,6 +112,7 @@ func NewPlaceholders(flagSet *pflag.FlagSet,
 		Remote:           remote,
 		Branch:           branch,
 		Version:          version,
+		UniqueStr:        config.UniqueStr(),
 		// services
 		ServicesFqn:        servicesFqn,
 		ServicesDirectory:  servicesDir,

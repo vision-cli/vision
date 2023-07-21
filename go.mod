@@ -5,6 +5,12 @@ go 1.20
 require (
 	github.com/spf13/pflag v1.0.5
 	github.com/vision-cli/common v0.3.0
+	github.com/vision-cli/vision-plugin-gateway-v1 v0.0.0-20230719111637-a1abfda983ff
+	github.com/vision-cli/vision-plugin-graphql-v1 v0.0.0-20230706114026-b14408901802
+	github.com/vision-cli/vision-plugin-infra-v1 v0.0.0-20230706115821-a27fdfe739f7
+	github.com/vision-cli/vision-plugin-plugin-v1 v0.0.0-20230705083226-655078ec825d
+	github.com/vision-cli/vision-plugin-project-v1 v0.0.0-20230719074009-30b5d5420093
+	github.com/vision-cli/vision-plugin-service-v1 v0.0.0-20230720080828-286ec7da30fb
 )
 
 require (
@@ -36,7 +42,7 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
-	github.com/vision-cli/api v0.4.0
+	github.com/vision-cli/api v0.5.0
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/term v0.9.0 // indirect
 )
