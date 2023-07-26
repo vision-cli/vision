@@ -19,11 +19,41 @@ func TestLoadConfig_SetsViperDictionary(t *testing.T) {
 	if err := LoadConfig(pflag.NewFlagSet("config", 1), false, "./testdata/config_test", "", true); err != nil {
 		assert.Fail(t, "LoadConfig failed")
 	}
-	assert.Equal(t, ProjectName(), "test")
-	assert.Equal(t, Remote(), "remote")
-	assert.Equal(t, TemplateVersion(), "v1")
-	assert.Equal(t, Deployment(), "standalone-graphql")
-	assert.Equal(t, v.GetString(uniqueStr), "kekprt")
+	assert.Equal(t, "test", ProjectName())
+	assert.Equal(t, "remote", Remote())
+	assert.Equal(t, "v1", TemplateVersion())
+	assert.Equal(t, "standalone-graphql", Deployment())
+	assert.Equal(t, "kekprt", v.GetString(uniqueStr))
+	assert.Equal(t, "master", Branch())
+}
+
+func TestLoadConfig_NoConfigRequiredConfigFileExists_LoadsConfigFile(t *testing.T) {
+	if err := LoadConfig(pflag.NewFlagSet("config", 1), false, "./testdata/config_test", "", false); err != nil {
+		assert.Fail(t, "LoadConfig failed")
+	}
+	assert.Equal(t, "test", ProjectName())
+	assert.Equal(t, "remote", Remote())
+	assert.Equal(t, "kekprt", v.GetString(uniqueStr))
+	assert.Equal(t, "master", Branch())
+}
+
+func TestLoadConfig_NoConfigRequiredConfigFileDoesntExist_LoadsDefaultValues(t *testing.T) {
+	oldv := v
+	defer func() { v = oldv }()
+	v = Persist(NewMockPersist())
+
+	oldstat := stat
+	defer func() { stat = oldstat }()
+	stat = func(name string) (os.FileInfo, error) {
+		return nil, os.ErrNotExist
+	}
+
+	if err := LoadConfig(pflag.NewFlagSet("config", 1), false, "./testdata/config_test", "", false); err != nil {
+		assert.Fail(t, "LoadConfig failed")
+	}
+	assert.Equal(t, "", ProjectName())
+	assert.Equal(t, "", Remote())
+	assert.Equal(t, "master", Branch())
 }
 
 func TestLoadConfig_NoConfigNotSilentUserDoesntCreate_ReturnError(t *testing.T) {
@@ -72,10 +102,10 @@ func TestLoadConfig_NoConfigSilentWithRemote_CreatesDefaultConfig(t *testing.T) 
 
 	err := LoadConfig(flagSet, true, "./testdata/config_test", "", true)
 	require.NoError(t, err)
-	assert.Equal(t, Remote(), "github.com/mycompany")
-	assert.Equal(t, TemplateVersion(), "v1")
-	assert.Equal(t, Deployment(), "standalone-graphql")
-	assert.Equal(t, len(v.GetString(uniqueStr)), 6)
+	assert.Equal(t, "github.com/mycompany", Remote())
+	assert.Equal(t, "v1", TemplateVersion())
+	assert.Equal(t, "standalone-graphql", Deployment())
+	assert.Equal(t, 6, len(v.GetString(uniqueStr)))
 }
 
 func TestLoadConfig_NoConfigNotSilent_CreatesDefaultConfig(t *testing.T) {
@@ -92,10 +122,10 @@ func TestLoadConfig_NoConfigNotSilent_CreatesDefaultConfig(t *testing.T) {
 	mocks.WithMockStdio(t, "y\n"+stdinPass, func() {
 		err := LoadConfig(pflag.NewFlagSet("config", 1), false, "./testdata/config_test", "", true)
 		require.NoError(t, err)
-		assert.Equal(t, Remote(), "github.com/starkindustries")
-		assert.Equal(t, TemplateVersion(), "v1")
-		assert.Equal(t, Deployment(), "standalone-graphql")
-		assert.Equal(t, len(v.GetString(uniqueStr)), 6)
+		assert.Equal(t, "github.com/starkindustries", Remote())
+		assert.Equal(t, "v1", TemplateVersion())
+		assert.Equal(t, "standalone-graphql", Deployment())
+		assert.Equal(t, 6, len(v.GetString(uniqueStr)))
 	})
 }
 
@@ -116,16 +146,16 @@ func TestLoadConfig_NoConfigNotSilentWithFlag_DoesntPromptAndSetsFlagValue(t *te
 	mocks.WithMockStdio(t, "y\njarvis\n\n\ngrc.io/stark\n\n\n\n\n\n\n\n", func() {
 		err := LoadConfig(flagSet, false, "./testdata/config_test", "", true)
 		require.NoError(t, err)
-		assert.Equal(t, Remote(), "github.com/ironman")
-		assert.Equal(t, TemplateVersion(), "v1")
-		assert.Equal(t, Deployment(), "standalone-graphql")
-		assert.Equal(t, len(v.GetString(uniqueStr)), 6)
+		assert.Equal(t, "github.com/ironman", Remote())
+		assert.Equal(t, "v1", TemplateVersion())
+		assert.Equal(t, "standalone-graphql", Deployment())
+		assert.Equal(t, 6, len(v.GetString(uniqueStr)))
 	})
 }
 
 func TestGenericSetter_SetsDefaultWhenSilent(t *testing.T) {
 	genericSetter(bufio.NewReader(os.Stdin), "", "test", true, func(val string) {
-		assert.Equal(t, val, "test")
+		assert.Equal(t, "test", val)
 	})
 }
 
@@ -133,7 +163,7 @@ func TestGenericSetter_PromptsAndSetsUserInputWhenNotSilent(t *testing.T) {
 	mocks.WithMockStdio(t, "anothertest\n", func() {
 		reader := bufio.NewReader(os.Stdin)
 		genericSetter(reader, "", "test", false, func(val string) {
-			assert.Equal(t, val, "anothertest")
+			assert.Equal(t, "anothertest", val)
 		})
 	})
 }
@@ -142,7 +172,7 @@ func TestMustSetWithFlag_PrioritisesFlag(t *testing.T) {
 	flagSet := pflag.NewFlagSet("config", 1)
 	flagSet.String("exampleflag", "flagoverride", "")
 	err := mustSetWithFlag(bufio.NewReader(os.Stdin), "", "defaultval", false, flagSet, "exampleflag", func(val string) {
-		assert.Equal(t, val, "flagoverride")
+		assert.Equal(t, "flagoverride", val)
 	})
 	require.NoError(t, err)
 }
@@ -151,7 +181,7 @@ func TestMustSetWithFlag_UsesDefaultIfSilentAndNoFlag(t *testing.T) {
 	flagSet := pflag.NewFlagSet("config", 1)
 	flagSet.String("exampleflag", "", "")
 	err := mustSetWithFlag(bufio.NewReader(os.Stdin), "", "defaultval", true, flagSet, "exampleflag", func(val string) {
-		assert.Equal(t, val, "defaultval")
+		assert.Equal(t, "defaultval", val)
 	})
 	require.NoError(t, err)
 }
@@ -162,7 +192,7 @@ func TestMustSetWithFlag_PromptsWithDefaultIfNotSilentAndNoFlag(t *testing.T) {
 		flagSet := pflag.NewFlagSet("config", 1)
 		flagSet.String("exampleflag", "", "")
 		err := mustSetWithFlag(reader, "", "defaultval", false, flagSet, "exampleflag", func(val string) {
-			assert.Equal(t, val, "anothertest")
+			assert.Equal(t, "anothertest", val)
 		})
 		require.NoError(t, err)
 	})
@@ -177,8 +207,8 @@ func TestLoadDefaultConfig_SilentWithAllDefaults_SetsAllConfig(t *testing.T) {
 	flagSet.String(FlagRegistry, "gcr.io/mycompany", "")
 	err := loadDefaultConfig(flagSet, true, "configfile", "projectname", bufio.NewReader(os.Stdin))
 	require.NoError(t, err)
-	assert.Equal(t, Remote(), "github.com/mycompany")
-	assert.Equal(t, ProjectName(), "projectname")
+	assert.Equal(t, "github.com/mycompany", Remote())
+	assert.Equal(t, "projectname", ProjectName())
 	assert.Equal(t, defaultBranch, Branch())
 	assert.Equal(t, defaultTemplateVersion, TemplateVersion())
 }
@@ -202,8 +232,8 @@ func TestLoadDefaultConfig_NotSilent_SetsAllConfig(t *testing.T) {
 		flagSet := pflag.NewFlagSet("config", 1)
 		err := loadDefaultConfig(flagSet, false, "configfile", "projectname", reader)
 		require.NoError(t, err)
-		assert.Equal(t, Remote(), "github.com/starkindustries")
-		assert.Equal(t, ProjectName(), "jarvis")
+		assert.Equal(t, "github.com/starkindustries", Remote())
+		assert.Equal(t, "jarvis", ProjectName())
 	})
 
 }
