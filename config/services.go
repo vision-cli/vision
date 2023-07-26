@@ -9,7 +9,7 @@ const (
 )
 
 func GraphqlName() string {
-	return v.GetString(viperServicesGraphqlKey)
+	return v.GetStringOrDefault(viperServicesGraphqlKey, defaultGraphqlName)
 }
 
 func SetGraphqlName(s string) {
@@ -17,7 +17,7 @@ func SetGraphqlName(s string) {
 }
 
 func GatewayName() string {
-	return v.GetString(viperServicesGatewayKey)
+	return v.GetStringOrDefault(viperServicesGatewayKey, defaultGatewayName)
 }
 
 func SetGatewayName(s string) {
@@ -25,7 +25,7 @@ func SetGatewayName(s string) {
 }
 
 func DefaultNamespace() string {
-	return v.GetString(viperDefaultServicesNamespaceKey)
+	return v.GetStringOrDefault(viperDefaultServicesNamespaceKey, defaultDefaultNamespace)
 }
 
 func SetDefaultNamespace(s string) {
@@ -33,7 +33,7 @@ func SetDefaultNamespace(s string) {
 }
 
 func ServicesDirectory() string {
-	return v.GetString(viperServicesDirectoryKey)
+	return v.GetStringOrDefault(viperServicesDirectoryKey, defaultServicesDir)
 }
 
 func SetServicesDirectory(s string) {

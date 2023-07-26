@@ -12,11 +12,11 @@ import (
 )
 
 const (
-	stdinPass = "jarvis\ngithub.com/starkindustries\n\n\n\n\n\n\n\n\n\n\n"
+	stdinPass = "jarvis\ngithub.com/starkindustries\n\n\ngrc.io/stark\n\n\n\n\n\n\n\n"
 )
 
 func TestLoadConfig_SetsViperDictionary(t *testing.T) {
-	if err := LoadConfig(pflag.NewFlagSet("config", 1), false, "./testdata/config_test", ""); err != nil {
+	if err := LoadConfig(pflag.NewFlagSet("config", 1), false, "./testdata/config_test", "", true); err != nil {
 		assert.Fail(t, "LoadConfig failed")
 	}
 	assert.Equal(t, ProjectName(), "test")
@@ -33,7 +33,7 @@ func TestLoadConfig_NoConfigNotSilentUserDoesntCreate_ReturnError(t *testing.T) 
 		stat = func(name string) (os.FileInfo, error) {
 			return nil, os.ErrNotExist
 		}
-		if err := LoadConfig(pflag.NewFlagSet("config", 1), false, "./testdata/config_test", ""); err == nil {
+		if err := LoadConfig(pflag.NewFlagSet("config", 1), false, "./testdata/config_test", "", true); err == nil {
 			assert.Fail(t, "Test should fail if user doesn't want to create config")
 		}
 	})
@@ -50,7 +50,7 @@ func TestLoadConfig_NoConfigSilent_FailsDueToMissingRemote(t *testing.T) {
 		return nil, os.ErrNotExist
 	}
 
-	if err := LoadConfig(pflag.NewFlagSet("config", 1), true, "./testdata/config_test", ""); err == nil {
+	if err := LoadConfig(pflag.NewFlagSet("config", 1), true, "./testdata/config_test", "", true); err == nil {
 		assert.Fail(t, "Test should fail because user has not provided a remote")
 	}
 }
@@ -68,8 +68,9 @@ func TestLoadConfig_NoConfigSilentWithRemote_CreatesDefaultConfig(t *testing.T) 
 
 	flagSet := pflag.NewFlagSet("config", 1)
 	flagSet.String(FlagRemote, "github.com/mycompany", "")
+	flagSet.String(FlagRegistry, "gcr.io/mycompany", "")
 
-	err := LoadConfig(flagSet, true, "./testdata/config_test", "")
+	err := LoadConfig(flagSet, true, "./testdata/config_test", "", true)
 	require.NoError(t, err)
 	assert.Equal(t, Remote(), "github.com/mycompany")
 	assert.Equal(t, TemplateVersion(), "v1")
@@ -89,7 +90,7 @@ func TestLoadConfig_NoConfigNotSilent_CreatesDefaultConfig(t *testing.T) {
 	}
 
 	mocks.WithMockStdio(t, "y\n"+stdinPass, func() {
-		err := LoadConfig(pflag.NewFlagSet("config", 1), false, "./testdata/config_test", "")
+		err := LoadConfig(pflag.NewFlagSet("config", 1), false, "./testdata/config_test", "", true)
 		require.NoError(t, err)
 		assert.Equal(t, Remote(), "github.com/starkindustries")
 		assert.Equal(t, TemplateVersion(), "v1")
@@ -112,8 +113,8 @@ func TestLoadConfig_NoConfigNotSilentWithFlag_DoesntPromptAndSetsFlagValue(t *te
 	flagSet := pflag.NewFlagSet("config", 1)
 	flagSet.String(FlagRemote, "github.com/ironman", "")
 
-	mocks.WithMockStdio(t, "y\njarvis\n\n\n\n\n\n\n\n\n\n\n", func() {
-		err := LoadConfig(flagSet, false, "./testdata/config_test", "")
+	mocks.WithMockStdio(t, "y\njarvis\n\n\ngrc.io/stark\n\n\n\n\n\n\n\n", func() {
+		err := LoadConfig(flagSet, false, "./testdata/config_test", "", true)
 		require.NoError(t, err)
 		assert.Equal(t, Remote(), "github.com/ironman")
 		assert.Equal(t, TemplateVersion(), "v1")
@@ -173,12 +174,13 @@ func TestLoadDefaultConfig_SilentWithAllDefaults_SetsAllConfig(t *testing.T) {
 	v = Persist(NewMockPersist())
 	flagSet := pflag.NewFlagSet("config", 1)
 	flagSet.String(FlagRemote, "github.com/mycompany", "")
+	flagSet.String(FlagRegistry, "gcr.io/mycompany", "")
 	err := loadDefaultConfig(flagSet, true, "configfile", "projectname", bufio.NewReader(os.Stdin))
 	require.NoError(t, err)
 	assert.Equal(t, Remote(), "github.com/mycompany")
 	assert.Equal(t, ProjectName(), "projectname")
 	assert.Equal(t, defaultBranch, Branch())
-	assert.Equal(t, defaultTempalateVersion, TemplateVersion())
+	assert.Equal(t, defaultTemplateVersion, TemplateVersion())
 }
 
 func TestLoadDefaultConfig_SilentWithMissingDefaults_ReturnsError(t *testing.T) {

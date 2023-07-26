@@ -19,31 +19,22 @@ func getValueFromFlagSetOrConfig(flagSet *pflag.FlagSet, flagName string, config
 	return configFunc()
 }
 
-func NewProjectPlaceholders(flagSet *pflag.FlagSet,
-	projectRoot, projectName string) (*api_v1.PluginPlaceholders, error) {
-	return NewPlaceholders(flagSet, projectRoot, projectName, "", "")
-}
-
-func NewServicePlaceholders(flagSet *pflag.FlagSet,
-	projectRoot, moduleName, serviceName string) (*api_v1.PluginPlaceholders, error) {
-	return NewPlaceholders(flagSet, projectRoot, config.ProjectName(), moduleName, serviceName)
-}
-
-func NewDefaultServicePlaceholders(flagSet *pflag.FlagSet,
-	projectRoot, serviceName string) (*api_v1.PluginPlaceholders, error) {
-	return NewPlaceholders(flagSet, projectRoot, config.ProjectName(), "", serviceName)
-}
-
 func NewPlaceholders(flagSet *pflag.FlagSet,
 	rawProjectRoot,
 	rawProjectName,
 	rawServiceNamespace,
 	rawServiceName string) (*api_v1.PluginPlaceholders, error) {
+
 	// Project name is snake case for use as a variable
 	projectName := cases.Kebab(rawProjectName)
 	// replace the raw project name if there is a config project name
 	if config.ProjectName() != "" {
 		projectName = cases.Kebab(config.ProjectName())
+	}
+
+	projectRoot, err := filepath.Abs(rawProjectRoot)
+	if err != nil {
+		return nil, err
 	}
 
 	// Project directory is kebab case for use as a folder name
@@ -104,7 +95,7 @@ func NewPlaceholders(flagSet *pflag.FlagSet,
 
 	return &api_v1.PluginPlaceholders{
 		// project
-		ProjectRoot:      rawProjectRoot,
+		ProjectRoot:      projectRoot,
 		ProjectName:      projectName,
 		ProjectDirectory: projectDirectory,
 		ProjectFqn:       projectFqn,
@@ -127,7 +118,7 @@ func NewPlaceholders(flagSet *pflag.FlagSet,
 		ServiceVersionedNamespace: serviceNamespace + "." + version,
 		ServiceName:               serviceName,
 		ServiceFqn:                servicefqn,
-		ServiceDirectory:          filepath.Join(projectDirectory, servicesDir, serviceNamespace, rawServiceName),
+		ServiceDirectory:          filepath.Join(servicesDir, serviceNamespace, rawServiceName),
 		// infra
 		InfraDirectory: config.InfraDirectory(),
 		// messaging

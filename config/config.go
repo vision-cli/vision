@@ -14,11 +14,11 @@ import (
 var stat = os.Stat
 var v = Persist(&ViperPersist{})
 
-func LoadConfig(flagSet *pflag.FlagSet, silent bool, projectConfigFile, projectName string) error {
+func LoadConfig(flagSet *pflag.FlagSet, silent bool, projectConfigFile, projectName string, requireConfig bool) error {
 	setConfigFile(projectConfigFile)
 	reader := bufio.NewReader(os.Stdin)
 
-	if !exists(projectConfigFile + configExtension) {
+	if !exists(projectConfigFile+configExtension) && requireConfig {
 		cli.Warningf("Project config file %s doesnt exist", projectConfigFile)
 		if silent {
 			return loadDefaultConfig(flagSet, true, projectConfigFile, projectName, reader)
@@ -67,8 +67,8 @@ func loadDefaultConfig(
 	return nil
 }
 
-func genericSetter(reader *bufio.Reader, prompt, def string, slient bool, setter func(string)) {
-	if slient {
+func genericSetter(reader *bufio.Reader, prompt, def string, silent bool, setter func(string)) {
+	if silent {
 		setter(def)
 	} else {
 		ans := cli.Input(reader, prompt, def, true)
@@ -79,7 +79,7 @@ func genericSetter(reader *bufio.Reader, prompt, def string, slient bool, setter
 func mustSetWithFlag(
 	reader *bufio.Reader,
 	prompt, def string,
-	slient bool,
+	silent bool,
 	flagSet *pflag.FlagSet,
 	flagName string,
 	setter func(string)) error {
@@ -88,7 +88,7 @@ func mustSetWithFlag(
 		return nil
 	}
 	val := def
-	if !slient {
+	if !silent {
 		val = cli.Input(reader, prompt, val, true)
 	}
 	if val == "" {

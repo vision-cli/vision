@@ -30,10 +30,9 @@ func GetCobraCommand(plugin plugins.Plugin, executor execute.Executor) (*cobra.C
 		Long:    usage.Long,
 		Example: usage.Example,
 		Run: func(cmd *cobra.Command, args []string) {
-			if usage.RequiresConfig {
-				if err := initializeConfig(cmd); err != nil {
-					cli.Fatalf("cannot initialize config: %v", err)
-				}
+			err := initializeConfig(cmd, usage.RequiresConfig)
+			if err != nil && usage.RequiresConfig {
+				cli.Fatalf("cannot initialize config: %v", err)
 			}
 			p, err := placeholders.NewPlaceholders(cmd.Flags(), ".", "default", "", "")
 			if err != nil {
@@ -58,7 +57,7 @@ func GetCobraCommand(plugin plugins.Plugin, executor execute.Executor) (*cobra.C
 	return &cc, nil
 }
 
-func initializeConfig(cmd *cobra.Command) error {
+func initializeConfig(cmd *cobra.Command, requireConfig bool) error {
 	var path string
 	dir, err := os.Getwd()
 	if err != nil {
@@ -68,5 +67,5 @@ func initializeConfig(cmd *cobra.Command) error {
 	}
 
 	// load the project config file if it exists, otherwise prompt the user to create one
-	return config.LoadConfig(cmd.Flags(), flag.IsSilent(cmd.Flags()), config.ConfigFilename, path)
+	return config.LoadConfig(cmd.Flags(), flag.IsSilent(cmd.Flags()), config.ConfigFilename, path, requireConfig)
 }

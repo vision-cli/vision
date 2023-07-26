@@ -24,7 +24,7 @@ var createCmd = &cobra.Command{
 			path = filepath.Base(dir)
 		}
 
-		if err := config.LoadConfig(cmd.Flags(), flag.IsSilent(cmd.Flags()), config.ConfigFilename, path); err != nil {
+		if err := config.LoadConfig(cmd.Flags(), flag.IsSilent(cmd.Flags()), config.ConfigFilename, path, true); err != nil {
 			cli.Fatalf("cannot create config file: %v", err)
 		}
 	},

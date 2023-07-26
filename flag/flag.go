@@ -49,7 +49,7 @@ func ConfigFlagset() *pflag.FlagSet {
 	conf.StringP(config.FlagApiVersion, "v", config.ApiVersion(), "api version to use")
 	conf.StringP(config.FlagTemplate, "t", "", "template to use")
 	conf.StringP(config.FlagDeployment, "d", config.Deployment(),
-		fmt.Sprintf("deployment pattern to use [%s, %s, %s]", config.DeployPlatform, config.DeployStandaloneGraphql))
+		fmt.Sprintf("deployment pattern to use [%s, %s]", config.DeployPlatform, config.DeployStandaloneGraphql))
 	conf.Bool(config.FlagSilent, false, "use default values for all flags and dont ask questions")
 	conf.Bool(config.FlagForce, false, "overwrite without asking questions")
 	return conf

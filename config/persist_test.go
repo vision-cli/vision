@@ -18,6 +18,13 @@ func (m *MockPersist) GetString(key string) string {
 	return m.values[key]
 }
 
+func (m *MockPersist) GetStringOrDefault(key string, defaultValue string) string {
+	if value, ok := m.values[key]; ok {
+		return value
+	}
+	return defaultValue
+}
+
 func (m *MockPersist) WriteConfig() error {
 	return nil
 }

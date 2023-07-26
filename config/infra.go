@@ -6,7 +6,7 @@ const (
 )
 
 func InfraDirectory() string {
-	return v.GetString(viperInfraDirectoryKey)
+	return v.GetStringOrDefault(viperInfraDirectoryKey, defaultInfraDir)
 }
 
 func SetInfraDirectory(s string) {
