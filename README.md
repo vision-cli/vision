@@ -1,4 +1,4 @@
-# ![logo](./images/vision-logo.svg "Vision") &nbsp; [Vision](<https://en.wikipedia.org/wiki/Vision_(Marvel_Cinematic_Universe)>)
+# ![logo](./images/vision-3d.jpg "Vision") &nbsp; [Vision](<https://en.wikipedia.org/wiki/Vision_(Marvel_Cinematic_Universe)>)
 
 ## Purpose
 
