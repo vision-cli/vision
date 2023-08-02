@@ -1,4 +1,9 @@
-# ![logo](./images/vision-3d.jpg "Vision") &nbsp; [Vision](<https://en.wikipedia.org/wiki/Vision_(Marvel_Cinematic_Universe)>)
+
+<h1 align="center"><a href="https://en.wikipedia.org/wiki/Vision_(Marvel_Cinematic_Universe">Vision</a></h1>
+
+<p align="center">
+  <img width="150" src="./images/vision-3d.jpg" />
+</p>
 
 ## Purpose
 
@@ -13,21 +18,21 @@ The vision cli is really a wrapper around vision plugins. The cli's purpose is t
 in the correct folder, create and manage config and use command line flags to override that config before calling plugins and
 passing that config to them. The plugins will do the code generation.
 
-Vision plugins use templates and Asbtract Syntax Trees (https://en.wikipedia.org/wiki/Abstract_syntax_tree) to write and
+Vision plugins use templates and Asbtract Syntax Trees (<https://en.wikipedia.org/wiki/Abstract_syntax_tree>) to write and
 manipulate code. Vision expects a project's folder and file structure to be in accordance with its standard.
 Ideally projects are created using vision and services are added using vision.
 
 ## Dependencies
 
-Vision requires golang (https://go.dev) to be installed.
+Vision requires golang (<https://go.dev>) to be installed.
 Vision plugins have other dependencies including
 
-- docker (https://www.docker.com)
-- dapr (https://dapr.io)
-- terraform (https://www.terraform.io)
-- azure cli (https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
-- aws cli (https://aws.amazon.com/cli/)
-- gcloud cli (https://cloud.google.com/sdk/gcloud)
+- docker (<https://www.docker.com>)
+- dapr (<https://dapr.io>)
+- terraform (<https://www.terraform.io>)
+- azure cli (<https://learn.microsoft.com/en-us/cli/azure/install-azure-cli>)
+- aws cli (<https://aws.amazon.com/cli/>)
+- gcloud cli (<https://cloud.google.com/sdk/gcloud>)
 
 Install the grpc tools by running:
 
