@@ -21,7 +21,7 @@ func SetProjectName(s string) {
 }
 
 func TemplateVersion() string {
-	return v.GetString(viperProjectTemplateVersionKey)
+	return v.GetStringOrDefault(viperProjectTemplateVersionKey, defaultTemplateVersion)
 }
 
 func SetTemplateVersion(s string) {
@@ -37,7 +37,7 @@ func SetProvider(s string) {
 }
 
 func Deployment() string {
-	return v.GetString(viperProjectDeploymentKey)
+	return v.GetStringOrDefault(viperProjectDeploymentKey, defaultDeployment)
 }
 
 func SetDeployment(s string) {
@@ -53,7 +53,7 @@ func SetRemote(s string) {
 }
 
 func Registry() string {
-	return v.GetString(viperProjectRegistryKey)
+	return v.GetStringOrDefault(viperProjectRegistryKey, defaultRegistry)
 }
 
 func SetRegistry(s string) {
@@ -61,7 +61,7 @@ func SetRegistry(s string) {
 }
 
 func Branch() string {
-	return v.GetString(viperProjectBranchKey)
+	return v.GetStringOrDefault(viperProjectBranchKey, defaultBranch)
 }
 
 func SetBranch(s string) {
@@ -69,7 +69,7 @@ func SetBranch(s string) {
 }
 
 func ApiVersion() string {
-	return v.GetString(viperProjectApiVersionKey)
+	return v.GetStringOrDefault(viperProjectApiVersionKey, defaultApiVersion)
 }
 
 func SetApiVersion(s string) {

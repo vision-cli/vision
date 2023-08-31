@@ -5,6 +5,7 @@ import "github.com/spf13/viper"
 type Persist interface {
 	Set(key, value string)
 	GetString(key string) string
+	GetStringOrDefault(key string, defaultValue string) string
 	WriteConfig() error
 	WriteConfigAs(filename string) error
 	SetConfigName(name string)
@@ -20,6 +21,13 @@ func (v *ViperPersist) Set(key, value string) {
 
 func (v *ViperPersist) GetString(key string) string {
 	return viper.GetString(key)
+}
+
+func (v *ViperPersist) GetStringOrDefault(key string, defaultValue string) string {
+	if value := viper.GetString(key); value != "" {
+		return value
+	}
+	return defaultValue
 }
 
 func (v *ViperPersist) WriteConfig() error {
