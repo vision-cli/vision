@@ -1,4 +1,4 @@
-name: ci
+name: Vision CLI
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - master
     paths:
       - "**.go"
-      - ".github/workflows/ci.yml"
+      - ".github/workflows/vision_cli.yml"
 
 permissions:
   contents: read
