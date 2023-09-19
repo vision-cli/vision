@@ -3,9 +3,9 @@ package cli
 import (
 	"bufio"
 	"fmt"
-	"os"
 	"strings"
 
+	"github.com/charmbracelet/log"
 	"github.com/vision-cli/common/execute"
 )
 
@@ -54,7 +54,7 @@ func Input(reader *bufio.Reader, question, dflt string, mandatory bool) string {
 		var s string
 		answer, err := reader.ReadString('\n')
 		if err != nil {
-			Fatalf(err.Error())
+			log.Error(err.Error())
 		}
 		s = strings.TrimSpace(answer)
 		// Combinations
@@ -95,33 +95,33 @@ func InputWithValidation(
 		if valid {
 			return s
 		}
-		Warningf("invalid input: %s", msg)
+		log.Warn("invalid input: %s", msg)
 		if Confirmed(reader, "Do you still want to continue?") {
 			return s
 		}
 	}
 }
 
-// Warningf prints formatted message with red "WARNING!" prefix to stderr.
-func Warningf(message string, a ...any) {
-	fmt.Fprintf(os.Stderr, "%s %s\n", Highlight(warning, Yellow), fmt.Sprintf(message, a...))
-}
+// // Warningf prints formatted message with red "WARNING!" prefix to stderr.
+// func Warningf(message string, a ...any) {
+// 	fmt.Fprintf(os.Stderr, "%s %s\n", Highlight(warning, Yellow), fmt.Sprintf(message, a...))
+// }
 
-// Warningf prints formatted message with red "WARNING!" prefix to stderr.
-func Fatalf(message string, a ...any) {
-	fmt.Fprintf(os.Stderr, "%s %s\n", Highlight(fatal, Red), fmt.Sprintf(message, a...))
-	os.Exit(1)
-}
+// // Warningf prints formatted message with red "WARNING!" prefix to stderr.
+// func Fatalf(message string, a ...any) {
+// 	fmt.Fprintf(os.Stderr, "%s %s\n", Highlight(fatal, Red), fmt.Sprintf(message, a...))
+// 	os.Exit(1)
+// }
 
-// Hintf prints formatted message with yellow "HINT" prefix to stdout.
-func Hintf(message string, a ...any) {
-	fmt.Fprintf(os.Stdout, "%s %s\n", Highlight(hint, Yellow), fmt.Sprintf(message, a...))
-}
+// // Hintf prints formatted message with yellow "HINT" prefix to stdout.
+// func Hintf(message string, a ...any) {
+// 	fmt.Fprintf(os.Stdout, "%s %s\n", Highlight(hint, Yellow), fmt.Sprintf(message, a...))
+// }
 
-// Infof prints formatted message with gree "INFO" prefix to stdout.
-func Infof(message string, a ...any) {
-	fmt.Fprintf(os.Stdout, "%s %s\n", Highlight(info, Green), fmt.Sprintf(message, a...))
-}
+// // Infof prints formatted message with gree "INFO" prefix to stdout.
+// func Infof(message string, a ...any) {
+// 	fmt.Fprintf(os.Stdout, "%s %s\n", Highlight(info, Green), fmt.Sprintf(message, a...))
+// }
 
 func Highlight(s string, colour Colour) string {
 	return esc(colour) + s + esc(Reset)

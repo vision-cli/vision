@@ -5,7 +5,8 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
-	"github.com/vision-cli/vision/cli"
+
+	"github.com/charmbracelet/log"
 	"github.com/vision-cli/vision/config"
 	"github.com/vision-cli/vision/flag"
 )
@@ -25,7 +26,7 @@ var createCmd = &cobra.Command{
 		}
 
 		if err := config.LoadConfig(cmd.Flags(), flag.IsSilent(cmd.Flags()), config.ConfigFilename, path, true); err != nil {
-			cli.Fatalf("cannot create config file: %v", err)
+			log.Error("cannot create config file: %v", err)
 		}
 	},
 }
