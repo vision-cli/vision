@@ -58,6 +58,8 @@ func (OsExecutor) Errors(cmd *exec.Cmd, targetDir string, action string) error {
 	return nil
 }
 
+// Output() runs a command and returns the output of that command as a string.
+// Output() returns an error if the command fails
 func (OsExecutor) Output(cmd *exec.Cmd, targetDir string, action string) (string, error) {
 	cmd.Dir = targetDir
 

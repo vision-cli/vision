@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/vision-cli/vision/cli"
 	"github.com/vision-cli/vision/common/execute"
 	"github.com/vision-cli/vision/common/file"
 	"github.com/vision-cli/vision/common/tmpl"
@@ -55,6 +54,7 @@ func GetPlugins(executor execute.Executor) ([]Plugin, error) {
 	return plugins, nil
 }
 
+// Finds the system's $GOPATH then attaches "/bin" to the end of the string
 func goBinPath(executor execute.Executor) (string, error) {
 	goBinPath := file.GetEnv(goBinEnvVar)
 	if goBinPath == "" {
@@ -67,6 +67,8 @@ func goBinPath(executor execute.Executor) (string, error) {
 	return goBinPath, nil
 }
 
+// Checks if a file is vision plugin.
+// Plugins must be name with either the first or second word containing "vision".
 func fileIsVisionPlugin(filename string) bool {
 	c := strings.Split(filename, visionSeparator)
 	if len(c) != 4 || c[0] != visionFirstWord || c[1] != visionSecondWord {
@@ -75,6 +77,7 @@ func fileIsVisionPlugin(filename string) bool {
 	return true
 }
 
+// Currently: empty array
 func fileIsInternalPlugin(filename string) bool {
 	for _, internalPlugin := range InternalPlugins {
 		if filename == internalPlugin.Name {
@@ -82,4 +85,5 @@ func fileIsInternalPlugin(filename string) bool {
 		}
 	}
 	return false
+
 }
