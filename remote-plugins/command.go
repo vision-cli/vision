@@ -4,16 +4,16 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/spf13/cobra"
-	api_v1 "github.com/vision-cli/api/v1"
-
 	"github.com/charmbracelet/log"
-	"github.com/vision-cli/common/comms"
-	"github.com/vision-cli/common/execute"
-	"github.com/vision-cli/common/plugins"
+	"github.com/vision-cli/vision/common/comms"
+	"github.com/vision-cli/vision/common/execute"
+	"github.com/vision-cli/vision/common/plugins"
 	"github.com/vision-cli/vision/config"
 	"github.com/vision-cli/vision/flag"
 	"github.com/vision-cli/vision/placeholders"
+
+	"github.com/spf13/cobra"
+	api_v1 "github.com/vision-cli/api/v1"
 )
 
 var UsageQuery = api_v1.PluginRequest{

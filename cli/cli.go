@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/vision-cli/vision/common/execute"
+
 	"github.com/charmbracelet/log"
-	"github.com/vision-cli/common/execute"
 )
 
 // Confirmed returns input from the user in answer to the yes/no question.

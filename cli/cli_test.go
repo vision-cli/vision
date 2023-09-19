@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/vision-cli/vision/common/execute"
 
-	"github.com/vision-cli/common/execute"
-	"github.com/vision-cli/common/mocks"
+	"github.com/stretchr/testify/assert"
 	"github.com/vision-cli/vision/cli"
+	"github.com/vision-cli/vision/common/mocks"
 )
 
 func TestIsConfirmed_WhenAnsweredYesOrBlank_ReturnsTrue(t *testing.T) {

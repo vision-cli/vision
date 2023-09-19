@@ -5,11 +5,11 @@ import (
 	"net/url"
 	"path/filepath"
 
-	"github.com/spf13/pflag"
-
-	api_v1 "github.com/vision-cli/api/v1"
-	"github.com/vision-cli/common/cases"
+	"github.com/vision-cli/vision/common/cases"
 	"github.com/vision-cli/vision/config"
+
+	"github.com/spf13/pflag"
+	api_v1 "github.com/vision-cli/api/v1"
 )
 
 func getValueFromFlagSetOrConfig(flagSet *pflag.FlagSet, flagName string, configFunc func() string) string {

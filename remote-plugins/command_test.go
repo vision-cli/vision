@@ -8,10 +8,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/vision-cli/common/mocks"
-	commonPlugins "github.com/vision-cli/common/plugins"
+	"github.com/vision-cli/vision/common/mocks"
+	commonPlugins "github.com/vision-cli/vision/common/plugins"
 	"github.com/vision-cli/vision/config"
-	"github.com/vision-cli/vision/plugins"
+	"github.com/vision-cli/vision/remote-plugins"
 )
 
 var usageResp = `{

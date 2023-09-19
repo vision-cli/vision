@@ -1,0 +1,103 @@
+package jsonb
+
+import (
+	"context"
+	"fmt"
+	"math/rand"
+	"regexp"
+	"runtime"
+
+	"{{.LibsFqn}}/go/persistence/database"
+)
+
+const callDepth = 2
+
+// New returns DB with an allocated jsonb table specific to the calling service.
+// DB wraps low level access to the underlying postgres database in easy to use methods.
+// The Model ID method should return a unique string as an identifier.
+// By default records are persistent and will only be soft deleted.
+func New[M Model](databaseUrl string) (*DB[M], error) {
+	db, err := database.NewPostgres(databaseUrl)
+	if err != nil {
+		return nil, fmt.Errorf("getting postgres connection: %w", err)
+	}
+
+	table, err := createTableName()
+	if err != nil {
+		return nil, fmt.Errorf("creating table name: %w", err)
+	}
+
+	jsb, err := newDB[M](db, table)
+	if err != nil {
+		return nil, fmt.Errorf("creating jsonb database: %w", err)
+	}
+
+	return jsb, nil
+}
+
+func createTableName() (string, error) {
+	_, f, _, ok := runtime.Caller(callDepth)
+	if !ok {
+		return "", fmt.Errorf("unable to discover service info")
+	}
+	match := regexp.MustCompile(`(?:service[s]?)/([a-z0-9-]+)/([a-z0-9-]+)`).FindStringSubmatch(f)
+
+	return fmt.Sprintf("%s_%s", match[1], match[2]), nil
+}
+
+// TestUtils provides functions to drop and reset the table created the NewTest
+type TestUtils struct {
+	Drop  func(context.Context) error
+	Reset func(context.Context) error
+}
+
+// NewTest returns DB with a separately allocated test table that can be easily cleaned up with TestUtils.
+func NewTest[M Model](databaseUrl string) (*DB[M], *TestUtils, error) {
+	db, err := database.NewPostgres(databaseUrl)
+	if err != nil {
+		return nil, nil, fmt.Errorf("getting postgres connection: %w", err)
+	}
+
+	jsb := &DB[M]{db: db}
+	tableName := tableNamer("test_table")
+
+	// must be unique, block until allocated (parallel test)
+	err = jsb.Transaction(func(tx *DB[M]) error {
+		table := ""
+
+		for exists := true; exists == true; {
+			table = tableName()
+
+			err = tx.db.QueryRowContext(context.Background(), fmt.Sprintf(
+				"SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname='public' AND tablename='%s')",
+				table)).Scan(&exists)
+			if err != nil {
+				return fmt.Errorf("checking table name uniqueness: %w", err)
+			}
+		}
+
+		jsb, err = newDB[M](tx.db, table)
+		if err != nil {
+			return fmt.Errorf("creating jsonb database: %w", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("creating unique table: %w", err)
+	}
+
+	jsb.db = db
+	tu := &TestUtils{
+		Drop:  jsb.dropTable,
+		Reset: jsb.resetTable,
+	}
+
+	return jsb, tu, nil
+}
+
+func tableNamer(base string) func() string {
+	return func() string {
+		return fmt.Sprintf("%s_%d", base, rand.Int()) //nolint:gosec //testing only
+	}
+}

@@ -1,0 +1,255 @@
+package jsonb
+
+import (
+	"context"
+	"strconv"
+	"testing"
+
+	"github.com/goccy/go-json"
+	"github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
+
+	"{{.LibsFqn}}/go/persistence/database"
+)
+
+const (
+	loadSize = 10000
+	dbUrl    = "postgresql://user:password@localhost:5432/cerebro_apps?sslmode=disable"
+)
+
+type TestMod struct {
+	Id    int
+	Name  string
+	Tags  []string
+	Map   map[string]int
+	Child Child
+}
+
+func (p *TestMod) ID() string {
+	return strconv.Itoa(p.Id)
+}
+
+type Child struct {
+	Name string
+	Tags []string
+}
+
+type GormIndex struct {
+	Id   string         `gorm:"column:id;primarykey"`
+	Data postgres.Jsonb `gorm:"type:jsonb;index:,type:gin"`
+}
+
+func createDB(b *testing.B) (*DB[*TestMod], *gorm.DB) {
+	b.Helper()
+	db, err := database.NewPostgres(dbUrl)
+	require.NoError(b, err)
+	jsb, err := newDB[*TestMod](db, "test_table")
+	require.NoError(b, err)
+
+	gdb, err := database.ReadyStateDB(dbUrl, &GormIndex{})
+	require.NoError(b, err)
+
+	return jsb, gdb
+}
+
+func complexLoad(size int) []*TestMod {
+	load := make([]*TestMod, 0, size)
+
+	for i := 0; i < size; i++ {
+		s := strconv.Itoa(i)
+
+		t := []string{s}
+		if i%3 == 0 {
+			t = append(t, "d3")
+		}
+		if i%5 == 0 {
+			t = append(t, "d5")
+		}
+
+		m := make(map[string]int)
+		if i%2 != 0 {
+			m["rem5"] = i % 5
+			m["rem7"] = i % 7
+		}
+
+		c := Child{Name: "c" + s, Tags: []string{s}}
+		if i%3 == 0 {
+			c.Tags = append(c.Tags, "d3")
+		}
+
+		load = append(load, &TestMod{
+			Id:    i,
+			Name:  s,
+			Tags:  t,
+			Map:   m,
+			Child: c,
+		})
+	}
+
+	return load
+}
+
+func setup(b *testing.B, models []*TestMod) (context.Context, *DB[*TestMod], *gorm.DB) {
+	b.Helper()
+	jsb, gdb := createDB(b)
+	ctx := context.Background()
+
+	err := jsb.CreateInBatches(ctx, models, 50)
+	require.NoError(b, err)
+
+	entries := make([]*GormIndex, 0, len(models))
+	for _, m := range models {
+		var bytes []byte
+		bytes, err = json.Marshal(m)
+		require.NoError(b, err)
+
+		entries = append(entries, &GormIndex{
+			Id:   strconv.Itoa(m.Id),
+			Data: postgres.Jsonb{RawMessage: json.RawMessage(bytes)},
+		})
+	}
+
+	err = gdb.CreateInBatches(entries, 50).WithContext(ctx).Error
+	require.NoError(b, err)
+
+	return ctx, jsb, gdb
+}
+
+func tearDown(b *testing.B, jsb *DB[*TestMod], gdb *gorm.DB) {
+	b.Helper()
+	err := jsb.dropTable(context.Background())
+	assert.NoError(b, err)
+	err = gdb.Exec("DROP TABLE IF EXISTS gorm_indices").Error
+	assert.NoError(b, err)
+}
+
+func BenchmarkInsertAndRetrieve(b *testing.B) {
+	ctx, jsb, gdb := setup(b, nil)
+	defer tearDown(b, jsb, gdb)
+
+	load := complexLoad(loadSize)
+
+	b.Run("gorm", func(b *testing.B) {
+		var err error
+		entries := make([]*GormIndex, 0, len(load))
+
+		for _, l := range load {
+			var bytes []byte
+			bytes, err = json.Marshal(l)
+			require.NoError(b, err)
+
+			entries = append(entries, &GormIndex{
+				Id:   strconv.Itoa(l.Id),
+				Data: postgres.Jsonb{RawMessage: json.RawMessage(bytes)},
+			})
+		}
+
+		err = gdb.CreateInBatches(entries, 50).WithContext(ctx).Error
+		require.NoError(b, err)
+
+		var rows []*GormIndex
+		err = gdb.Find(&rows).WithContext(ctx).Error
+		require.NoError(b, err)
+
+		models := make([]*TestMod, 0, len(rows))
+		for _, row := range rows {
+			var model TestMod
+			err = json.Unmarshal(row.Data.RawMessage, &model)
+			require.NoError(b, err)
+
+			models = append(models, &model)
+		}
+		b.StopTimer()
+
+		assert.Equal(b, len(load), len(models))
+		require.NoError(b, gdb.Exec("TRUNCATE TABLE gorm_indices").Error)
+	})
+
+	b.Run("jsb", func(b *testing.B) {
+		err := jsb.CreateInBatches(ctx, load, 50)
+		require.NoError(b, err)
+
+		models, err := jsb.Models(ctx)
+		require.NoError(b, err)
+		b.StopTimer()
+
+		assert.Equal(b, len(load), len(models))
+		require.NoError(b, jsb.resetTable(ctx))
+	})
+}
+
+func BenchmarkMatchingFields(b *testing.B) {
+	ctx, jsb, gdb := setup(b, complexLoad(loadSize))
+	defer tearDown(b, jsb, gdb)
+
+	fields := map[string]any{"Tags": []string{"d5"}, "Child": map[string]any{"Tags": []string{"d3"}}}
+
+	var gormRes []*TestMod
+	b.Run("gorm", func(b *testing.B) {
+		var rows []*GormIndex
+		err := gdb.Find(&rows, "data @> ?", fields).WithContext(ctx).Error
+		require.NoError(b, err)
+
+		assert.Equal(b, true, len(rows) != 0)
+
+		models := make([]*TestMod, 0, len(rows))
+		for _, row := range rows {
+			var model TestMod
+			err = json.Unmarshal(row.Data.RawMessage, &model)
+			require.NoError(b, err)
+
+			models = append(models, &model)
+		}
+		gormRes = models
+	})
+
+	var jsbRes []*TestMod
+	b.Run("jsb", func(b *testing.B) {
+		models, err := jsb.Match(fields).Models(ctx)
+		require.NoError(b, err)
+
+		jsbRes = models
+	})
+
+	assert.Equal(b, len(gormRes), len(jsbRes))
+}
+
+func BenchmarkUpdate(b *testing.B) {
+	ctx, jsb, gdb := setup(b, complexLoad(loadSize))
+	defer tearDown(b, jsb, gdb)
+
+	b.Run("gorm", func(b *testing.B) {
+		var rows []*GormIndex
+		err := gdb.Find(&rows).WithContext(ctx).Error
+		require.NoError(b, err)
+
+		assert.Equal(b, true, len(rows) != 0)
+
+		for _, row := range rows {
+			var model TestMod
+			err = json.Unmarshal(row.Data.RawMessage, &model)
+			require.NoError(b, err)
+
+			model.Name += "x"
+			entry, err := RawMessage(model)
+			require.NoError(b, err)
+
+			err = gdb.Model(&row).Update("data", entry).WithContext(ctx).Error
+			require.NoError(b, err)
+		}
+	})
+
+	b.Run("jsb", func(b *testing.B) {
+		models, err := jsb.Models(ctx)
+		require.NoError(b, err)
+
+		for _, m := range models {
+			m.Name += "x"
+		}
+
+		err = jsb.SaveInBatches(ctx, models, 50)
+		require.NoError(b, err)
+	})
+}

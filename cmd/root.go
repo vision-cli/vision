@@ -4,11 +4,12 @@ import (
 	"errors"
 
 	"github.com/charmbracelet/log"
-	"github.com/spf13/cobra"
-	"github.com/vision-cli/common/execute"
-	cc "github.com/vision-cli/common/plugins"
 	"github.com/vision-cli/vision/cmd/config"
-	"github.com/vision-cli/vision/plugins"
+	"github.com/vision-cli/vision/common/execute"
+	cc "github.com/vision-cli/vision/common/plugins"
+	rp "github.com/vision-cli/vision/remote-plugins"
+
+	"github.com/spf13/cobra"
 )
 
 func init() {
@@ -19,7 +20,7 @@ func init() {
 		log.Warn("cannot get plugins: %v", err)
 	}
 	for _, pl := range p {
-		cobraCmd, err := plugins.GetCobraCommand(pl, osExecutor)
+		cobraCmd, err := rp.GetCobraCommand(pl, osExecutor)
 		if err != nil {
 			log.Warn("cannot get cobra command %s: %v", pl.Name, err)
 		}
@@ -34,27 +35,27 @@ var rootCmd = &cobra.Command{
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		return checkTools(execute.NewOsExecutor())
 	},
-	Example: `You need to create a seed project in the cloud you want before using Vision for the fisrt time.
+	Example: `You need to create a seed project in the cloud you want before using Vision for the first time.
 The seed project will be used to store terraform state and hold the container registry for your microservices.
 	
 Run the following command to create a new project
 
-  vision project create myproject -r github.com/myorg/myproject -g gcr.io/myproject
+	vision project create myproject -r github.com/myorg/myproject -g gcr.io/myproject
 
 This will create a folder called myproject with the standard vision folder structure and a default config file.
 There is a powerful option to create a project from a template model using
 
-  vision project create -t <template-name>
+	vision project create -t <template-name>
 
 See examples folder for example template files
 Once you have created a project, navigate to the project folder and create a microservice using
 
-  vision service create myservice
+	vision service create myservice
 
 This will create a folder called myservice with the standard vision folder structure for a microservice.
 Create a microservice platform for a cloud provider, for example creating an Azure platform using
 
-  vision infra create azure -d standalone-graphql
+	vision infra create azure -d standalone-graphql
 `,
 }
 
