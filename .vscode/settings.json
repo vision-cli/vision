@@ -5,6 +5,9 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "go.formatTool": "goimports",
+  "gopls": {
+    "formatting.local": "github.com/vision-cli/vision"
+  },
   "[go]": {
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {

@@ -19,7 +19,7 @@ var Osgetenv = os.Getenv
 // If path is already a file that is not a directory,
 // CreateDir will remove the file and create a directory in its place.
 func CreateDir(path string) error {
-	info, err := Osstat(path)
+	info, err := os.Stat(path)
 	if err == nil && !info.IsDir() {
 		os.Remove(path)
 	}

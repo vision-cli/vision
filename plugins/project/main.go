@@ -1,11 +1,11 @@
-package plugin
+package project
 
 import (
 	"bufio"
 	"fmt"
 	"os"
 
-	"github.com/vision-cli/vision/core/plugin/plugin"
+	"github.com/vision-cli/vision/plugins/plugin/plugin"
 
 	"github.com/vision-cli/vision/common/execute"
 	"github.com/vision-cli/vision/common/tmpl"

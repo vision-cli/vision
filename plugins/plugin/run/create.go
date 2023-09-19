@@ -7,7 +7,7 @@ import (
 	"github.com/vision-cli/vision/common/execute"
 	"github.com/vision-cli/vision/common/file"
 	"github.com/vision-cli/vision/common/tmpl"
-	"github.com/vision-cli/vision/core/plugin/placeholders"
+	"github.com/vision-cli/vision/plugins/plugin/placeholders"
 )
 
 const (

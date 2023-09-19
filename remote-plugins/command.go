@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/charmbracelet/log"
+
 	"github.com/vision-cli/vision/common/comms"
 	"github.com/vision-cli/vision/common/execute"
 	"github.com/vision-cli/vision/common/plugins"
@@ -54,7 +55,7 @@ func GetCobraCommand(plugin plugins.Plugin, executor execute.Executor) (*cobra.C
 			log.Info(response.Result)
 		},
 	}
-	cc.Flags().AddFlagSet(flag.ConfigFlagset())
+	// cc.Flags().AddFlagSet(flag.ConfigFlagset())
 	return &cc, nil
 }
 

@@ -1,0 +1,3 @@
+Run the following command to initialise a new project in the current directory
+
+	vision init

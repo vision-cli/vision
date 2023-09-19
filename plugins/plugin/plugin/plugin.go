@@ -3,8 +3,8 @@ package plugin
 import (
 	"errors"
 
-	"github.com/vision-cli/vision/core/plugin/placeholders"
-	"github.com/vision-cli/vision/core/plugin/run"
+	"github.com/vision-cli/vision/plugins/plugin/placeholders"
+	"github.com/vision-cli/vision/plugins/plugin/run"
 
 	api_v1 "github.com/vision-cli/api/v1"
 	"github.com/vision-cli/vision/common/execute"

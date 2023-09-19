@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vision-cli/vision/core/plugin/plugin"
+	"github.com/vision-cli/vision/plugins/plugin/plugin"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/vision-cli/vision/common/mocks"

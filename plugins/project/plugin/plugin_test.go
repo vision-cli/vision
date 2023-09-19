@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vision-cli/vision/core/project/plugin"
-	"github.com/vision-cli/vision/core/project/run"
+	"github.com/vision-cli/vision/plugins/project/plugin"
+	"github.com/vision-cli/vision/plugins/project/run"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/vision-cli/vision/common/file"

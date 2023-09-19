@@ -3,7 +3,7 @@ package placeholders_test
 import (
 	"testing"
 
-	"github.com/vision-cli/vision/core/plugin/placeholders"
+	"github.com/vision-cli/vision/plugins/plugin/placeholders"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
