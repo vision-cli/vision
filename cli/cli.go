@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/vision-cli/common/execute"
+	"github.com/vision-cli/vision/common/execute"
 )
 
 const (
@@ -29,6 +29,10 @@ const (
 	White
 	Reset Colour = 0
 )
+
+func ReadInput() {
+
+}
 
 // Confirmed returns input from the user in answer to the yes/no question.
 func Confirmed(reader *bufio.Reader, question string) bool {

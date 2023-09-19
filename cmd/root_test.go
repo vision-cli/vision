@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/vision-cli/common/mocks"
+	"github.com/vision-cli/vision/common/mocks"
 )
 
 func TestCheckTools_MustFindGo(t *testing.T) {

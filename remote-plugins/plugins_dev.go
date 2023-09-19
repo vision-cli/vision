@@ -7,17 +7,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	api_v1 "github.com/vision-cli/api/v1"
-	"github.com/vision-cli/common/execute"
-	"github.com/vision-cli/common/marshal"
-	"github.com/vision-cli/common/plugins"
-	"github.com/vision-cli/common/tmpl"
-	gatewayPlugin "github.com/vision-cli/vision-plugin-gateway-v1/plugin"
-	graphqlPlugin "github.com/vision-cli/vision-plugin-graphql-v1/plugin"
-	infraPlugin "github.com/vision-cli/vision-plugin-infra-v1/plugin"
-	pluginPlugin "github.com/vision-cli/vision-plugin-plugin-v1/plugin"
-	projectPlugin "github.com/vision-cli/vision-plugin-project-v1/plugin"
-	servicePlugin "github.com/vision-cli/vision-plugin-service-v1/plugin"
+
+	"github.com/vision-cli/vision/common/marshal"
+	"github.com/vision-cli/vision/common/plugins"
+	"github.com/vision-cli/vision/common/tmpl"
+	pluginPlugin "github.com/vision-cli/vision/core/plugin"
+	projectPlugin "github.com/vision-cli/vision/core/project"
+	"github.com/vision-cli/vision/execute"
+
+	api_v1         "github.com/vision-cli/api/v1"
+	gatewayPlugin  "github.com/vision-cli/vision-plugin-gateway-v1/plugin"
+	graphqlPlugin  "github.com/vision-cli/vision-plugin-graphql-v1/plugin"
+	infraPlugin    "github.com/vision-cli/vision-plugin-infra-v1/plugin"
+	servicePlugin  "github.com/vision-cli/vision-plugin-service-v1/plugin"v
 )
 
 func init() {

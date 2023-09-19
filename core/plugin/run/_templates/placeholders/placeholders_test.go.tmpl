@@ -1,0 +1,23 @@
+package placeholders_test
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	api_v1 "github.com/vision-cli/api/v1"
+	"{{.Namespace}}/placeholders"
+)
+
+func TestSetupPlaceholders_WithValidName_ReturnsCorrectPlaceholders(t *testing.T) {
+	r := api_v1.PluginRequest{
+		Args: []string{"create", "mything"},
+	}
+	result, err := placeholders.SetupPlaceholders(r)
+	require.NoError(t, err)
+	expected := &placeholders.Placeholders{
+		Name:      "mything",
+	}
+	assert.Equal(t, expected, result)
+}
+
