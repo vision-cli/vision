@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/vision-cli/vision/cli"
 	"github.com/vision-cli/vision/common/execute"
 	"github.com/vision-cli/vision/common/file"
 	"github.com/vision-cli/vision/common/tmpl"
@@ -26,6 +27,8 @@ type Plugin struct {
 
 var InternalPlugins = []Plugin{}
 
+// Reads the Vision specific plugins that are in the system $GOPATH
+// Returns the plugins as an array
 func GetPlugins(executor execute.Executor) ([]Plugin, error) {
 	var plugins []Plugin
 	pluginPath, err := goBinPath(executor)
@@ -36,6 +39,7 @@ func GetPlugins(executor execute.Executor) ([]Plugin, error) {
 	if err != nil {
 		return plugins, fmt.Errorf("cannot read plugin directory %s: %s", pluginPath, err.Error())
 	}
+
 	for _, pluginFile := range pluginFiles {
 		if !pluginFile.IsDir() && fileIsVisionPlugin(pluginFile.Name()) && !fileIsInternalPlugin(pluginFile.Name()) {
 			plugins = append(plugins, Plugin{

@@ -21,6 +21,8 @@ var UsageQuery = api_v1.PluginRequest{
 }
 
 func GetCobraCommand(plugin plugins.Plugin, executor execute.Executor) (*cobra.Command, error) {
+	cli.Infof("rp.GetCobraCommand")
+
 	usage, err := comms.Call[api_v1.PluginUsageResponse](plugin, &UsageQuery, executor)
 	if err != nil {
 		return nil, err

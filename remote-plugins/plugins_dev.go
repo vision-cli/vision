@@ -15,11 +15,11 @@ import (
 	projectPlugin "github.com/vision-cli/vision/core/project"
 	"github.com/vision-cli/vision/execute"
 
-	api_v1         "github.com/vision-cli/api/v1"
-	gatewayPlugin  "github.com/vision-cli/vision-plugin-gateway-v1/plugin"
-	graphqlPlugin  "github.com/vision-cli/vision-plugin-graphql-v1/plugin"
-	infraPlugin    "github.com/vision-cli/vision-plugin-infra-v1/plugin"
-	servicePlugin  "github.com/vision-cli/vision-plugin-service-v1/plugin"v
+	api_v1 "github.com/vision-cli/api/v1"
+	gatewayPlugin "github.com/vision-cli/vision-plugin-gateway-v1/plugin"
+	graphqlPlugin "github.com/vision-cli/vision-plugin-graphql-v1/plugin"
+	infraPlugin "github.com/vision-cli/vision-plugin-infra-v1/plugin"
+	servicePlugin "github.com/vision-cli/vision-plugin-service-v1/plugin"
 )
 
 func init() {
