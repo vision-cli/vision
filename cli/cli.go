@@ -9,27 +9,6 @@ import (
 	"github.com/vision-cli/common/execute"
 )
 
-const (
-	fatal   = "FATAL!  "
-	warning = "WARNING!"
-	hint    = "HINT    "
-	info    = "INFO    "
-)
-
-type Colour int
-
-const (
-	Black Colour = iota + 30
-	Red
-	Green
-	Yellow
-	Blue
-	Magenta
-	Cyan
-	White
-	Reset Colour = 0
-)
-
 // Confirmed returns input from the user in answer to the yes/no question.
 func Confirmed(reader *bufio.Reader, question string) bool {
 	fmt.Printf("%s (Y/n): ", question)
@@ -100,33 +79,4 @@ func InputWithValidation(
 			return s
 		}
 	}
-}
-
-// // Warningf prints formatted message with red "WARNING!" prefix to stderr.
-// func Warningf(message string, a ...any) {
-// 	fmt.Fprintf(os.Stderr, "%s %s\n", Highlight(warning, Yellow), fmt.Sprintf(message, a...))
-// }
-
-// // Warningf prints formatted message with red "WARNING!" prefix to stderr.
-// func Fatalf(message string, a ...any) {
-// 	fmt.Fprintf(os.Stderr, "%s %s\n", Highlight(fatal, Red), fmt.Sprintf(message, a...))
-// 	os.Exit(1)
-// }
-
-// // Hintf prints formatted message with yellow "HINT" prefix to stdout.
-// func Hintf(message string, a ...any) {
-// 	fmt.Fprintf(os.Stdout, "%s %s\n", Highlight(hint, Yellow), fmt.Sprintf(message, a...))
-// }
-
-// // Infof prints formatted message with gree "INFO" prefix to stdout.
-// func Infof(message string, a ...any) {
-// 	fmt.Fprintf(os.Stdout, "%s %s\n", Highlight(info, Green), fmt.Sprintf(message, a...))
-// }
-
-func Highlight(s string, colour Colour) string {
-	return esc(colour) + s + esc(Reset)
-}
-
-func esc(colour Colour) string {
-	return fmt.Sprintf("\033[%dm", colour)
 }
