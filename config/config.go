@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/log"
 	"github.com/spf13/pflag"
 
 	"github.com/vision-cli/vision/cli"
@@ -19,7 +20,7 @@ func LoadConfig(flagSet *pflag.FlagSet, silent bool, projectConfigFile, projectN
 	reader := bufio.NewReader(os.Stdin)
 
 	if !exists(projectConfigFile+configExtension) && requireConfig {
-		cli.Warningf("Project config file %s doesnt exist", projectConfigFile)
+		log.Warn("Project config file %s doesnt exist", projectConfigFile)
 		if silent {
 			return loadDefaultConfig(flagSet, true, projectConfigFile, projectName, reader)
 		}

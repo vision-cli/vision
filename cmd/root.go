@@ -2,9 +2,8 @@ package cmd
 
 import (
 	"errors"
-	"log"
 
-	"github.com/vision-cli/vision/cli"
+	"github.com/charmbracelet/log"
 	"github.com/vision-cli/vision/cmd/config"
 	"github.com/vision-cli/vision/common/execute"
 	cc "github.com/vision-cli/vision/common/plugins"
@@ -18,12 +17,12 @@ func init() {
 	osExecutor := execute.NewOsExecutor()
 	p, err := cc.GetPlugins(osExecutor)
 	if err != nil {
-		cli.Warningf("cannot get plugins: %v", err)
+		log.Warn("cannot get plugins: %v", err)
 	}
 	for _, pl := range p {
 		cobraCmd, err := rp.GetCobraCommand(pl, osExecutor)
 		if err != nil {
-			cli.Warningf("cannot get cobra command %s: %v", pl.Name, err)
+			log.Warn("cannot get cobra command %s: %v", pl.Name, err)
 		}
 		rootCmd.AddCommand(cobraCmd)
 	}
@@ -62,9 +61,8 @@ Create a microservice platform for a cloud provider, for example creating an Azu
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		cli.Fatalf(err.Error())
+		log.Error(err.Error())
 	}
-	log.Println("root command executes")
 }
 
 func checkTools(e execute.Executor) error {
@@ -72,25 +70,25 @@ func checkTools(e execute.Executor) error {
 		return errors.New("go is not installed")
 	}
 	if !e.CommandExists("protoc") {
-		cli.Warningf("The protoc cli is not installed. You will need this to build the service. See https://grpc.io/docs/protoc-installation/ for installation instructions.")
+		log.Warn("The protoc cli is not installed. You will need this to build the service. See https://grpc.io/docs/protoc-installation/ for installation instructions.")
 	}
 	if !e.CommandExists("dapr") {
-		cli.Warningf("The dapr cli is not installed. You will need this to run your service locally. See https://docs.dapr.io for installation instructions.")
+		log.Warn("The dapr cli is not installed. You will need this to run your service locally. See https://docs.dapr.io for installation instructions.")
 	}
 	if !e.CommandExists("docker") {
-		cli.Warningf("The docker cli is not installed. You will need this to build infrastructure. See (https://www.docker.com) for installation instructions.")
+		log.Warn("The docker cli is not installed. You will need this to build infrastructure. See (https://www.docker.com) for installation instructions.")
 	}
 	if !e.CommandExists("az") {
-		cli.Warningf("The az cli is not installed. You will need this to build Azure infrastructure. See (https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) for installation instructions.")
+		log.Warn("The az cli is not installed. You will need this to build Azure infrastructure. See (https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) for installation instructions.")
 	}
 	if !e.CommandExists("aws") {
-		cli.Warningf("The aws cli is not installed. You will need this to build Aws infrastructure. See (https://aws.amazon.com/cli/) for installation instructions.")
+		log.Warn("The aws cli is not installed. You will need this to build Aws infrastructure. See (https://aws.amazon.com/cli/) for installation instructions.")
 	}
 	if !e.CommandExists("gcloud") {
-		cli.Warningf("The gcloud cli is not installed. You will need this to build Gcp infrastructure. See (https://cloud.google.com/sdk/gcloud) for installation instructions.")
+		log.Warn("The gcloud cli is not installed. You will need this to build Gcp infrastructure. See (https://cloud.google.com/sdk/gcloud) for installation instructions.")
 	}
 	if !e.CommandExists("terraform") {
-		cli.Warningf("The terraform cli is not installed. You will need this to build infrastructure. See (https://www.terraform.io) for installation instructions.")
+		log.Warn("The terraform cli is not installed. You will need this to build infrastructure. See (https://www.terraform.io) for installation instructions.")
 	}
 	return nil
 }

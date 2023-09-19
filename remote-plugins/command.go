@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/vision-cli/vision/cli"
+	"github.com/charmbracelet/log"
 	"github.com/vision-cli/vision/common/comms"
 	"github.com/vision-cli/vision/common/execute"
 	"github.com/vision-cli/vision/common/plugins"
@@ -21,8 +21,6 @@ var UsageQuery = api_v1.PluginRequest{
 }
 
 func GetCobraCommand(plugin plugins.Plugin, executor execute.Executor) (*cobra.Command, error) {
-	cli.Infof("rp.GetCobraCommand")
-
 	usage, err := comms.Call[api_v1.PluginUsageResponse](plugin, &UsageQuery, executor)
 	if err != nil {
 		return nil, err
@@ -35,11 +33,11 @@ func GetCobraCommand(plugin plugins.Plugin, executor execute.Executor) (*cobra.C
 		Run: func(cmd *cobra.Command, args []string) {
 			err := initializeConfig(cmd, usage.RequiresConfig)
 			if err != nil && usage.RequiresConfig {
-				cli.Fatalf("cannot initialize config: %v", err)
+				log.Error("cannot initialize config: %v", err)
 			}
 			p, err := placeholders.NewPlaceholders(cmd.Flags(), ".", "default", "", "")
 			if err != nil {
-				cli.Fatalf("cannot initialize placeholders: %v", err)
+				log.Error("cannot initialize placeholders: %v", err)
 			}
 			response, err := comms.Call[api_v1.PluginResponse](plugin, &api_v1.PluginRequest{
 				Command:      api_v1.CommandRun,
@@ -48,12 +46,12 @@ func GetCobraCommand(plugin plugins.Plugin, executor execute.Executor) (*cobra.C
 				Placeholders: *p,
 			}, executor)
 			if err != nil {
-				cli.Fatalf(err.Error())
+				log.Error(err.Error())
 			}
 			if response.Error != "" {
-				cli.Fatalf(response.Error)
+				log.Error(response.Error)
 			}
-			cli.Infof(response.Result)
+			log.Info(response.Result)
 		},
 	}
 	cc.Flags().AddFlagSet(flag.ConfigFlagset())
