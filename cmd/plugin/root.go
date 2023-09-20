@@ -27,6 +27,7 @@ var RootCmd = &cobra.Command{
 	Long:  "Ditto",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if getVersion {
+			// TODO (luke): Implement real plugins
 			exe := execute.NewPluginExecutor("/opt/homebrew/bin/go")
 			if err := exe.Version(); err != nil {
 				return err
