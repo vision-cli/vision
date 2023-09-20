@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -34,7 +35,7 @@ var RootCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) > 1 {
 			log.Info("usage: vision init [projectname]")
-			return errors.New("unexpected arguments.")
+			return errors.New("unexpected arguments")
 		}
 
 		// take the current dir name to use as project name
@@ -42,31 +43,20 @@ var RootCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-
 		var projectName string
+		var projectDir string
 		if len(args) == 0 {
-			projectName = filepath.Base(dir)
+			projectName, projectDir = filepath.Base(dir), ""
 		} else {
-			projectName = args[0]
-			dir = filepath.Join(dir, projectName)
-			if err := os.Mkdir(projectName, os.ModePerm); err != nil {
-				log.Fatal("directory already exists. exiting")
-			}
+			projectName, projectDir = args[0], args[0]
 		}
 
-		// check if file exists, if so do nothing leaving info log for user
-		configFilePath := filepath.Join(dir, configFileName)
-		if _, err := os.Stat(configFilePath); errors.Is(err, os.ErrNotExist) {
-			// file does not exist so we create it
-			err = createDefaultConfig(projectName)
-			if err != nil {
-				return err
-			}
-			log.Info("successfully initialised vision")
-			return nil
+		configFilePath := filepath.Join(dir, projectDir, configFileName)
+		err = createDefaultConfig(configFilePath, projectName, projectDir)
+		if err != nil {
+			return err
 		}
-		// file already exists, let user know
-		log.Info("config file already exists")
+		log.Info("successfully initialised vision")
 		return nil
 	},
 }
@@ -78,16 +68,21 @@ type VisionConfig struct {
 }
 
 // create a default json file with basic info as defined in the config model.
+// if the projectDir is not an empty string, create the directory as well as the file
 // TODO(steve): generate default config for each installed plugin
-func createDefaultConfig(projectName string) error {
-	if err := os.Chdir(projectName); errors.Is(err, os.ErrNotExist) {
-		log.Info("creating vision.json inside " + projectName)
-	} else if err != nil {
-		log.Info("failed to create default config")
-		return err
+func createDefaultConfig(configFilePath, projectName, projectDir string) error {
+	if projectDir != "" {
+		if err := os.MkdirAll(filepath.Dir(configFilePath), os.ModePerm); err != nil {
+			return fmt.Errorf("error creating directory: %v", err)
+		}
 	}
 
-	f, err := os.Create(configFileName)
+	// check if file exists, create if not
+	f, err := os.OpenFile(configFilePath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
+	if errors.Is(err, os.ErrExist) {
+		log.Info("config file already exists")
+		return nil
+	}
 	if err != nil {
 		return err
 	}
