@@ -17,14 +17,13 @@ func init() {
 }
 
 // left as an example of flags for future reference
-// var (
-// 	MyBool bool
-// )
+var (
+	projectName string
+)
 
 func initFlags() *pflag.FlagSet {
 	fs := pflag.NewFlagSet("init", 1)
-	// placefholder for future flags
-	// fs.BoolVarP(&MyBool, "tf", "t", true, "test flag")
+	fs.StringVarP(&projectName, "project", "p", "", "project name")
 	return fs
 }
 
@@ -43,12 +42,18 @@ var RootCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		var projectName string
+
 		var projectDir string
 		if len(args) == 0 {
-			projectName, projectDir = filepath.Base(dir), ""
+			projectDir = ""
+			if projectName == "" { // flag not set by user so we set project name here
+				projectName = filepath.Base(dir)
+			}
 		} else {
-			projectName, projectDir = args[0], args[0]
+			projectDir = args[0]
+			if projectName == "" { // flag not set by user so we set project name here
+				projectName = args[0]
+			}
 		}
 
 		configFilePath := filepath.Join(dir, projectDir, configFileName)

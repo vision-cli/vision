@@ -1,3 +1,13 @@
-Run the following command to initialise a new project in the current directory
+Run the following command to initialise a new project in the current directory using the directory name as the project name
 
 	vision init
+
+To create a new directory and set that as the project name run
+
+    vision init [projectName]
+
+To override the project name pass in -p or --project
+
+    vision init -p [projectName]
+
+    vision init [directoryName] -p [projectName]
