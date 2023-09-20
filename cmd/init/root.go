@@ -32,15 +32,17 @@ var RootCmd = &cobra.Command{
 	Short: "Initialise a new vision project",
 	Long:  "Create a new vision project and initialise default config values for vision and installed plugins",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) > 1 {
+			log.Info("usage: vision init [projectname]")
+			return errors.New("unexpected arguments.")
+		}
+
+		// take the current dir name to use as project name
 		dir, err := os.Getwd()
 		if err != nil {
 			return err
 		}
 
-		// take the current dir name to use as project name
-		if len(args) > 1 {
-			return errors.New("too many arguments")
-		}
 		var projectName string
 		if len(args) == 0 {
 			projectName = filepath.Base(dir)
