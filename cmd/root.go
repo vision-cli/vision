@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	initialise "github.com/vision-cli/vision/cmd/init"
+	plug "github.com/vision-cli/vision/cmd/plugin"
 	"github.com/vision-cli/vision/common/execute"
 	cc "github.com/vision-cli/vision/common/plugins"
 	rp "github.com/vision-cli/vision/remote-plugins"
@@ -14,6 +15,7 @@ import (
 
 func init() {
 	rootCmd.AddCommand(initialise.RootCmd)
+	rootCmd.AddCommand(plug.RootCmd)
 	osExecutor := execute.NewOsExecutor()
 	p, err := cc.GetPlugins(osExecutor)
 	if err != nil {
@@ -28,14 +30,14 @@ func init() {
 	}
 }
 
-//go:embed example.txt
-var exampleText string
+//go:embed vision-help.txt
+var visionHelp string
 
 var rootCmd = &cobra.Command{
 	Use:     "vision",
 	Short:   "A developer productivity tool",
 	Long:    `Vision is tool to create microservice platforms and microservice scaffolding code`,
-	Example: exampleText,
+	Example: visionHelp,
 }
 
 func Execute() {
