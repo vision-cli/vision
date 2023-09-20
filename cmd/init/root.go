@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -16,14 +17,13 @@ func init() {
 }
 
 // left as an example of flags for future reference
-// var (
-// 	MyBool bool
-// )
+var (
+	projectName string
+)
 
 func initFlags() *pflag.FlagSet {
 	fs := pflag.NewFlagSet("init", 1)
-	// placefholder for future flags
-	// fs.BoolVarP(&MyBool, "tf", "t", true, "test flag")
+	fs.StringVarP(&projectName, "project", "p", "", "project name")
 	return fs
 }
 
@@ -32,25 +32,36 @@ var RootCmd = &cobra.Command{
 	Short: "Initialise a new vision project",
 	Long:  "Create a new vision project and initialise default config values for vision and installed plugins",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) > 1 {
+			log.Info("usage: vision init [projectname]")
+			return errors.New("unexpected arguments")
+		}
+
+		// take the current dir name to use as project name
 		dir, err := os.Getwd()
 		if err != nil {
 			return err
 		}
-		// take the current dir name to use as project name
-		projectName := filepath.Base(dir)
-		// check if file exists, if so do nothing leaving info log for user
-		configFilePath := filepath.Join(dir, configFileName)
-		if _, err := os.Stat(configFilePath); errors.Is(err, os.ErrNotExist) {
-			// file does not exist so we create it
-			err = createDefaultConfig(projectName)
-			if err != nil {
-				return err
+
+		var projectDir string
+		if len(args) == 0 {
+			projectDir = ""
+			if projectName == "" { // flag not set by user so we set project name here
+				projectName = filepath.Base(dir)
 			}
-			log.Info("successfully initialised vision")
-			return nil
+		} else {
+			projectDir = args[0]
+			if projectName == "" { // flag not set by user so we set project name here
+				projectName = args[0]
+			}
 		}
-		// file already exists, let user know
-		log.Info("config file already exists")
+
+		configFilePath := filepath.Join(dir, projectDir, configFileName)
+		err = createDefaultConfig(configFilePath, projectName, projectDir)
+		if err != nil {
+			return err
+		}
+		log.Info("successfully initialised vision")
 		return nil
 	},
 }
@@ -62,9 +73,21 @@ type VisionConfig struct {
 }
 
 // create a default json file with basic info as defined in the config model.
+// if the projectDir is not an empty string, create the directory as well as the file
 // TODO(steve): generate default config for each installed plugin
-func createDefaultConfig(projectName string) error {
-	f, err := os.Create(configFileName)
+func createDefaultConfig(configFilePath, projectName, projectDir string) error {
+	if projectDir != "" {
+		if err := os.MkdirAll(filepath.Dir(configFilePath), os.ModePerm); err != nil {
+			return fmt.Errorf("error creating directory: %v", err)
+		}
+	}
+
+	// check if file exists, create if not
+	f, err := os.OpenFile(configFilePath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
+	if errors.Is(err, os.ErrExist) {
+		log.Info("config file already exists")
+		return nil
+	}
 	if err != nil {
 		return err
 	}
