@@ -36,8 +36,22 @@ var RootCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+
 		// take the current dir name to use as project name
-		projectName := filepath.Base(dir)
+		if len(args) > 1 {
+			return errors.New("too many arguments")
+		}
+		var projectName string
+		if len(args) == 0 {
+			projectName = filepath.Base(dir)
+		} else {
+			projectName = args[0]
+			dir = filepath.Join(dir, projectName)
+			if err := os.Mkdir(projectName, os.ModePerm); err != nil {
+				log.Fatal("directory already exists. exiting")
+			}
+		}
+
 		// check if file exists, if so do nothing leaving info log for user
 		configFilePath := filepath.Join(dir, configFileName)
 		if _, err := os.Stat(configFilePath); errors.Is(err, os.ErrNotExist) {
@@ -64,6 +78,13 @@ type VisionConfig struct {
 // create a default json file with basic info as defined in the config model.
 // TODO(steve): generate default config for each installed plugin
 func createDefaultConfig(projectName string) error {
+	if err := os.Chdir(projectName); errors.Is(err, os.ErrNotExist) {
+		log.Info("creating vision.json inside " + projectName)
+	} else if err != nil {
+		log.Info("failed to create default config")
+		return err
+	}
+
 	f, err := os.Create(configFileName)
 	if err != nil {
 		return err
