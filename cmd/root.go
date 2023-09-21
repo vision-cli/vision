@@ -17,12 +17,17 @@ func init() {
 	rootCmd.AddCommand(initialise.RootCmd)
 	pluginArray := findVisionPlugins()
 	for _, pl := range pluginArray {
-		cobraCmd := &cobra.Command{Use: pl}
+		cobraCmd := &cobra.Command{
+			Use: pl,
+			RunE: func(cmd *cobra.Command, args []string) {
+
+			},
+		}
 		rootCmd.AddCommand(cobraCmd)
 	}
 }
 
-//go:embed example.txt
+//go:embed vision-help.txt
 var visionHelp string
 
 var rootCmd = &cobra.Command{
