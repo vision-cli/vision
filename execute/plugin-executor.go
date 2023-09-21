@@ -15,20 +15,7 @@ func NewPluginExecutor() PluginExec {
 	return PluginExec{}
 }
 
-func (p PluginExec) Version() error {
-	cmd := exec.Command(p.Root, "version")
-	bts, err := cmd.Output()
-	if err != nil {
-		return err
-	}
-	log.Info(string(bts))
-	return nil
-}
-
-func (p PluginExec) ConfigInit() error {
-	return nil
-}
-
+// Executes a command and an argument to a Vision plugin binary then processes any output.
 func (p PluginExec) RunCommand(pluginName string, arg string) error {
 	root := fmt.Sprintf("vision-plugin-%v-v1", pluginName)
 	cmd := exec.Command(root, arg)

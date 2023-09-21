@@ -14,6 +14,7 @@ import (
 	"github.com/vision-cli/vision/execute"
 )
 
+// Finds available plugins and initialises them into commands
 func init() {
 	rootCmd.AddCommand(initialise.RootCmd)
 	pluginMap := findVisionPlugins()
@@ -29,7 +30,14 @@ func init() {
 
 var pluginCommand = func(cmd *cobra.Command, args []string) error {
 	exe := execute.NewPluginExecutor()
-	exe.RunCommand(cmd.Use, args[0])
+	var arg string
+	if len(args) < 1 { // prevents index out of range
+		arg = ""
+		log.Warnf("No argument provided. Try: \n\n\t vision %v -v", cmd.Use)
+	} else {
+		arg = args[0]
+	}
+	exe.RunCommand(cmd.Use, arg)
 	return nil
 }
 
@@ -49,6 +57,8 @@ func Execute() {
 	}
 }
 
+// Seaches all paths on the system to find binaries with specific vision formatting and assigns them to a map.
+// The formatting is `vision-plugin-[plugin-name]-[version-number]`
 func findVisionPlugins() map[string]string {
 	var pluginMap = make(map[string]string)
 
