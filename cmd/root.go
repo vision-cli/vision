@@ -11,20 +11,26 @@ import (
 	"github.com/spf13/cobra"
 
 	initialise "github.com/vision-cli/vision/cmd/init"
+	"github.com/vision-cli/vision/execute"
 )
 
 func init() {
 	rootCmd.AddCommand(initialise.RootCmd)
-	pluginArray := findVisionPlugins()
-	for _, pl := range pluginArray {
+	pluginMap := findVisionPlugins()
+	for plName, plVersion := range pluginMap {
 		cobraCmd := &cobra.Command{
-			Use: pl,
-			RunE: func(cmd *cobra.Command, args []string) {
-
-			},
+			Use:     plName,
+			Version: plVersion,
+			RunE:    pluginCommand,
 		}
 		rootCmd.AddCommand(cobraCmd)
 	}
+}
+
+var pluginCommand = func(cmd *cobra.Command, args []string) error {
+	exe := execute.NewPluginExecutor()
+	exe.RunCommand(cmd.Use, args[0])
+	return nil
 }
 
 //go:embed vision-help.txt
@@ -43,8 +49,8 @@ func Execute() {
 	}
 }
 
-func findVisionPlugins() []string {
-	var pluginNameArray []string
+func findVisionPlugins() map[string]string {
+	var pluginMap = make(map[string]string)
 
 	for _, path := range strings.Split(os.Getenv("PATH"), ":") {
 		filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
@@ -55,12 +61,12 @@ func findVisionPlugins() []string {
 				return nil
 			}
 			if strings.HasPrefix(info.Name(), "vision-plugin") {
-				nameArray := strings.Split(info.Name(), "-")
-				pluginNameArray = append(pluginNameArray, nameArray[2])
+				pluginSplit := strings.Split(info.Name(), "-")
+
+				pluginMap[pluginSplit[2]] = pluginSplit[3]
 			}
 			return nil
 		})
 	}
-
-	return pluginNameArray
+	return pluginMap
 }
