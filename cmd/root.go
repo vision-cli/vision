@@ -33,7 +33,7 @@ var pluginCommand = func(cmd *cobra.Command, args []string) error {
 	var arg string
 	if len(args) < 1 { // prevents index out of range
 		arg = ""
-		log.Warnf("No argument provided. Try: \n\n\t vision %v -v", cmd.Use)
+		log.Warnf("No argument provided. Try: \n\t\n vision %v -v", cmd.Use)
 	} else {
 		arg = args[0]
 	}
