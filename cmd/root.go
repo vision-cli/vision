@@ -2,6 +2,8 @@ package cmd
 
 import (
 	_ "embed"
+	"encoding/json"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -67,20 +69,63 @@ func createPluginCommandHandler(p pluginPath) func(cmd *cobra.Command, args []st
 				return err
 			}
 			// TODO merge into vision config
-			mergeConfigs()
+			mergeConfigs(p.Name, i.Config)
 			log.Info("command handler", "init", i.Config)
 		}
 		return nil
 	}
 }
 
-func mergeConfigs(config map[string]string) error {
-	file, err := os.OpenFile("vision.json", os.O_RDWR, 0644)
+func mergeConfigs(pluginName string, config any) error {
+	writeSuccess := false
+	isTruncated := false
+	f, err := os.OpenFile("vision.json", os.O_RDWR, 0644)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
-	file.
+	defer f.Close()
+
+	b, err := io.ReadAll(f)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		// defensive coding to keep a clone of the original data
+		var originalData []byte
+		copy(originalData, b)
+		if !writeSuccess && isTruncated {
+			_, err = f.Write(originalData)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}()
+
+	var configBytes map[string]any
+	err = json.Unmarshal(b, &configBytes)
+	if err != nil {
+		return err
+	}
+
+	configBytes[pluginName] = config
+	err = f.Truncate(0)
+	if err != nil {
+		return err
+	}
+	isTruncated = true
+	_, err = f.Seek(0, 0)
+	if err != nil {
+		return err
+	}
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", "  ")
+	err = enc.Encode(configBytes)
+	if err != nil {
+		return err
+	}
+
+	writeSuccess = true
+	return nil
 }
 
 func initVisionFlags() *pflag.FlagSet {

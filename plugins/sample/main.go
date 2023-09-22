@@ -17,11 +17,10 @@ func main() {
 		})
 	case "init":
 		json.NewEncoder(os.Stdout).Encode(map[string]any{
-			"config": map[string]any{
-				"[azure]": map[string]string{
-					"subscriptionid": "value",
-				},
+			"config": map[string]string{
+				"subscriptionid": "value",
 			},
-		})
+		},
+		)
 	}
 }
