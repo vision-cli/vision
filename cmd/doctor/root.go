@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -20,32 +21,47 @@ var RootCmd = &cobra.Command{
 	RunE:  doctorCommand,
 }
 
+var healthRecord []string
+
 var doctorCommand = func(cmd *cobra.Command, args []string) error {
 	plugins := FindVisionPlugins()
 
 	for _, plug := range plugins {
+		log.Infof("The plugins available are: %v", plug.Name)
+	}
+
+	for _, plug := range plugins {
 		// call each of the built in commands
 		exe := plugin.NewExecutor(plug.FullPath)
-		_, err := exe.Info()
+		info, err := exe.Info()
 		if err != nil {
-			log.Infof("No info available for plugin: %v", plug.Name)
-			// save log to doctor log
+			healthCheck := fmt.Sprintf("Info is faulty for plugin: %v", plug.Name)
+			healthRecord = append(healthRecord, healthCheck)
+		} else if info.ShortDescription == "" || info.LongDescription == "" {
+			healthCheck := fmt.Sprintf("Info is faulty for plugin: %v", plug.Name)
+			healthRecord = append(healthRecord, healthCheck)
 		}
 
-		// version
-		_, err = exe.Init()
+		ini, err := exe.Init()
 		if err != nil {
-			log.Infof("No init available for plugin: %v", plug.Name)
-			// save log to doctor log
+			healthCheck := fmt.Sprintf("Init is faulty for plugin: %v", plug.Name)
+			healthRecord = append(healthRecord, healthCheck)
+		} else if ini.Config == "" || ini.Config == nil {
+			healthCheck := fmt.Sprintf("Init is faulty for plugin: %v", plug.Name)
+			healthRecord = append(healthRecord, healthCheck)
 		}
 
-		// init
-		_, err = exe.Version()
+		vers, err := exe.Version()
 		if err != nil {
-			log.Infof("No version available for plugin: %v", plug.Name)
-			// save log to doctor log
+			healthCheck := fmt.Sprintf("Version is faulty for plugin: %v", plug.Name)
+			healthRecord = append(healthRecord, healthCheck)
+		} else if vers.SemVer == "" {
+			healthCheck := fmt.Sprintf("Version is faulty for plugin: %v", plug.Name)
+			healthRecord = append(healthRecord, healthCheck)
 		}
-		//
+	}
+	for _, hr := range healthRecord {
+		log.Warn(hr)
 	}
 	return nil
 }
