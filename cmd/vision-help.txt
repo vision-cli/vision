@@ -1,6 +1,6 @@
 Run the following command to initialise a new project in the current directory using the directory name as the project name
 
-	vision init
+    vision init
 
 To create a new directory and set that as the project name run
 
