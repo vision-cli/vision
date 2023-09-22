@@ -129,14 +129,14 @@ func findVisionPlugins() []pluginPath {
 	return plugins
 }
 
-//go:embed vision-help.txt
-var visionHelp string
+//go:embed example.txt
+var exampleText string
 
 var rootCmd = &cobra.Command{
 	Use:     "vision",
 	Short:   "A developer productivity tool",
 	Long:    `Vision is a tool to create microservice platforms and microservice scaffolding code`,
-	Example: visionHelp,
+	Example: exampleText,
 }
 
 func Execute() {
