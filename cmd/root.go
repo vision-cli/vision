@@ -4,15 +4,13 @@ import (
 	_ "embed"
 	"encoding/json"
 	"io"
-	"io/fs"
 	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
+	doctor "github.com/vision-cli/vision/cmd/doctor"
 	initialise "github.com/vision-cli/vision/cmd/init"
 	"github.com/vision-cli/vision/internal/plugin"
 )
@@ -20,8 +18,9 @@ import (
 // Finds available plugins and initialises them into commands
 func init() {
 	rootCmd.AddCommand(initialise.RootCmd)
+	rootCmd.AddCommand(doctor.RootCmd)
 	rootCmd.Flags().AddFlagSet(initVisionFlags())
-	plugins := findVisionPlugins()
+	plugins := doctor.FindVisionPlugins()
 	for _, plugin := range plugins {
 		cmd, err := createCommand(plugin)
 		if err != nil {
@@ -34,7 +33,7 @@ func init() {
 }
 
 // createCommand takes in a plugin and returns a cobra command to interact with that plugin
-func createCommand(p pluginPath) (*cobra.Command, error) {
+func createCommand(p doctor.PluginPath) (*cobra.Command, error) {
 	exe := plugin.NewExecutor(p.FullPath)
 	info, err := exe.Info()
 	if err != nil {
@@ -56,7 +55,7 @@ func createCommand(p pluginPath) (*cobra.Command, error) {
 	return cobraCmd, nil
 }
 
-func createPluginCommandHandler(p pluginPath) func(cmd *cobra.Command, args []string) error {
+func createPluginCommandHandler(p doctor.PluginPath) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 { // prevents index out of range
 			log.Warnf("No argument provided. Try: \n\t\n vision %v -v", cmd.Use)
@@ -130,57 +129,6 @@ func mergeConfigs(pluginName string, config any) error {
 func initVisionFlags() *pflag.FlagSet {
 	fs := pflag.NewFlagSet("vision", 1)
 	return fs
-}
-
-type pluginPath struct {
-	Name     string
-	Version  string
-	FullPath string
-}
-
-// Searches all dirs in the PATH envar to find binaries with specific vision formatting and assigns them to a map.
-// The formatting is `vision-plugin-[plugin-name]-[version-number]`
-func findVisionPlugins() []pluginPath {
-	const prefix = "vision-plugin"
-
-	var plugins []pluginPath
-
-	sysPath := os.Getenv("PATH")
-	paths := strings.Split(sysPath, ":")
-
-	m := make(map[string]struct{})
-	for _, p := range paths {
-		m[p] = struct{}{}
-	}
-	var uniqPaths []string
-	for k := range m {
-		uniqPaths = append(uniqPaths, k)
-	}
-	paths = uniqPaths
-
-	for _, path := range uniqPaths {
-		filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
-			if info == nil {
-				return nil
-			}
-			if info.IsDir() {
-				return nil
-			}
-			if strings.HasPrefix(info.Name(), prefix) {
-				pluginSplit := strings.Split(info.Name(), "-")
-				if len(pluginSplit) == 4 { // only process correctly named plugins
-					name, version := pluginSplit[2], pluginSplit[3]
-					plugins = append(plugins, pluginPath{
-						Name:     name,
-						Version:  version,
-						FullPath: path,
-					})
-				}
-			}
-			return nil
-		})
-	}
-	return plugins
 }
 
 //go:embed example.txt
