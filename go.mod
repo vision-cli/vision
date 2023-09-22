@@ -8,10 +8,6 @@ require (
 	github.com/charmbracelet/log v0.2.4
 	github.com/oshothebig/pbast v0.0.0-20170925213915-84cdd26c3def
 	github.com/spf13/pflag v1.0.5
-	github.com/vision-cli/vision-plugin-gateway-v1 v0.0.0-20230728080841-3d37b935a623
-	github.com/vision-cli/vision-plugin-graphql-v1 v0.0.0-20230706114026-b14408901802
-	github.com/vision-cli/vision-plugin-infra-v1 v0.0.0-20230706115821-a27fdfe739f7
-	github.com/vision-cli/vision-plugin-service-v1 v0.0.0-20230720080828-286ec7da30fb
 	gopkg.in/yaml.v3 v3.0.1
 
 )

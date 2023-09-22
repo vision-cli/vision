@@ -66,11 +66,21 @@ func createPluginCommandHandler(p pluginPath) func(cmd *cobra.Command, args []st
 			if err != nil {
 				return err
 			}
-			// TODO merge into vison config
-			log.Info(i.Config)
+			// TODO merge into vision config
+			mergeConfigs()
+			log.Info("command handler", "init", i.Config)
 		}
 		return nil
 	}
+}
+
+func mergeConfigs(config map[string]string) error {
+	file, err := os.OpenFile("vision.json", os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	file.
 }
 
 func initVisionFlags() *pflag.FlagSet {
@@ -84,7 +94,7 @@ type pluginPath struct {
 	FullPath string
 }
 
-// Seaches all dirs in the PATH envar to find binaries with specific vision formatting and assigns them to a map.
+// Searches all dirs in the PATH envar to find binaries with specific vision formatting and assigns them to a map.
 // The formatting is `vision-plugin-[plugin-name]-[version-number]`
 func findVisionPlugins() []pluginPath {
 	const prefix = "vision-plugin"
