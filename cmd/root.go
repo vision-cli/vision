@@ -2,13 +2,16 @@ package cmd
 
 import (
 	_ "embed"
+	"encoding/json"
 	"io/fs"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
 	initialise "github.com/vision-cli/vision/cmd/init"
 	"github.com/vision-cli/vision/execute"
@@ -17,6 +20,7 @@ import (
 // Finds available plugins and initialises them into commands
 func init() {
 	rootCmd.AddCommand(initialise.RootCmd)
+	rootCmd.Flags().AddFlagSet(initVisionFlags())
 	pluginMap := findVisionPlugins()
 	for plName, plVersion := range pluginMap {
 		cobraCmd := &cobra.Command{
@@ -26,6 +30,34 @@ func init() {
 		}
 		rootCmd.AddCommand(cobraCmd)
 	}
+}
+
+type jsonInput struct {
+	Name string
+}
+
+func (ji *jsonInput) String() string {
+	b, err := json.Marshal(*ji)
+	if err != nil {
+		return "error marshalling json"
+	}
+	return string(b)
+}
+
+func (ji *jsonInput) Set(s string) error {
+	return json.Unmarshal([]byte(s), ji)
+}
+
+func (ji *jsonInput) Type() string {
+	return ""
+}
+
+var inputFile jsonInput
+
+func initVisionFlags() *pflag.FlagSet {
+	fs := pflag.NewFlagSet("vision flag set", 1)
+	fs.VarP(&inputFile, "json-input", "j", "parse json into vision")
+	return fs
 }
 
 var pluginCommand = func(cmd *cobra.Command, args []string) error {
@@ -47,8 +79,19 @@ var visionHelp string
 var rootCmd = &cobra.Command{
 	Use:     "vision",
 	Short:   "A developer productivity tool",
-	Long:    `Vision is tool to create microservice platforms and microservice scaffolding code`,
+	Long:    `Vision is a tool to create microservice platforms and microservice scaffolding code`,
 	Example: visionHelp,
+	RunE:    inputSelector,
+}
+
+var inputSelector = func(cmd *cobra.Command, args []string) error {
+	data, err := ioutil.ReadFile(args[1])
+	if err != nil {
+		return err
+	}
+	inputFile.Set(string(data))
+	log.Info(inputFile.String())
+	return nil
 }
 
 func Execute() {
