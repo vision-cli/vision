@@ -58,6 +58,24 @@ func (e Executor) Version() (*Version, error) {
 	return &v, nil
 }
 
+type Init struct {
+	Config any `json:"config"`
+}
+
+func (e Executor) Init() (*Init, error) {
+	cmd := exec.Command(e.FullPath, "init")
+	b, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+	var i Init
+	err = json.Unmarshal(b, &i)
+	if err != nil {
+		return nil, fmt.Errorf("init: invalid json resp from plugin: %w", err)
+	}
+	return &i, nil
+}
+
 // Executes a command and an argument to a Vision plugin binary then processes any output.
 func (e Executor) RunCommand(pluginName string, arg string) error {
 	root := fmt.Sprintf("vision-plugin-%v-v1", pluginName)

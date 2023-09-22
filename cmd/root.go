@@ -43,26 +43,34 @@ func createCommand(p pluginPath) (*cobra.Command, error) {
 		return nil, err
 	}
 
-	var pluginCommand = func(cmd *cobra.Command, args []string) error {
-		exe := plugin.NewExecutor(p.FullPath)
-		var arg string
-		if len(args) < 1 { // prevents index out of range
-			log.Warnf("No argument provided. Try: \n\t\n vision %v -v", cmd.Use)
-		} else {
-			arg = args[0]
-		}
-		return exe.RunCommand(cmd.Use, arg)
-	}
-
 	cobraCmd := &cobra.Command{
 		Use:     p.Name,
 		Version: version.SemVer,
 		Short:   info.ShortDescription,
-		Long:    "",
-		RunE:    pluginCommand,
+		Long:    info.LongDescription,
+		RunE:    createPluginCommandHandler(p),
 	}
 
 	return cobraCmd, nil
+}
+
+func createPluginCommandHandler(p pluginPath) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 { // prevents index out of range
+			log.Warnf("No argument provided. Try: \n\t\n vision %v -v", cmd.Use)
+		}
+		exe := plugin.NewExecutor(p.FullPath)
+		switch args[0] {
+		case "init":
+			i, err := exe.Init()
+			if err != nil {
+				return err
+			}
+			// TODO merge into vison config
+			log.Info(i.Config)
+		}
+		return nil
+	}
 }
 
 func initVisionFlags() *pflag.FlagSet {

@@ -15,5 +15,13 @@ func main() {
 		json.NewEncoder(os.Stdout).Encode(map[string]string{
 			"sem_ver": "v0.0.1",
 		})
+	case "init":
+		json.NewEncoder(os.Stdout).Encode(map[string]any{
+			"config": map[string]any{
+				"[azure]": map[string]string{
+					"subscriptionid": "value",
+				},
+			},
+		})
 	}
 }
