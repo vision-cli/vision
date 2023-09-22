@@ -35,11 +35,16 @@ var doctorCommand = func(cmd *cobra.Command, args []string) error {
 		// version
 		_, err = exe.Init()
 		if err != nil {
-
+			log.Infof("No init available for plugin: %v", plug.Name)
+			// save log to doctor log
 		}
 
 		// init
-
+		_, err = exe.Version()
+		if err != nil {
+			log.Infof("No version available for plugin: %v", plug.Name)
+			// save log to doctor log
+		}
 		//
 	}
 	return nil

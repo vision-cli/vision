@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
-
-	"github.com/charmbracelet/log"
 )
 
 type Executor struct {
