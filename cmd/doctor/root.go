@@ -7,6 +7,9 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/log"
+
+	"github.com/vision-cli/vision/internal/plugin"
+
 	"github.com/spf13/cobra"
 )
 
@@ -19,7 +22,26 @@ var RootCmd = &cobra.Command{
 
 var doctorCommand = func(cmd *cobra.Command, args []string) error {
 	plugins := FindVisionPlugins()
-	log.Info(plugins)
+
+	for _, plug := range plugins {
+		// call each of the built in commands
+		exe := plugin.NewExecutor(plug.FullPath)
+		_, err := exe.Info()
+		if err != nil {
+			log.Infof("No info available for plugin: %v", plug.Name)
+			// save log to doctor log
+		}
+
+		// version
+		_, err = exe.Init()
+		if err != nil {
+
+		}
+
+		// init
+
+		//
+	}
 	return nil
 }
 
