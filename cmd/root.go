@@ -70,7 +70,6 @@ func createPluginCommandHandler(p pluginPath) func(cmd *cobra.Command, args []st
 			}
 			// TODO merge into vision config
 			mergeConfigs(p.Name, i.Config)
-			log.Info("command handler", "init", i.Config)
 		}
 		return nil
 	}
