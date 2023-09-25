@@ -141,15 +141,18 @@ var doctorCommand = func(cmd *cobra.Command, args []string) error {
 // }
 
 func printTable() {
-
 	columns := []table.Column{
 		{Title: "Plugin", Width: 10},
 		{Title: "Command", Width: 10},
 		{Title: "Fault", Width: 27},
 	}
 	rows := []table.Row{}
-	for _, log := range healthRecord {
+	// TODO(genevieve): fix repeated plugin names
+	for n, log := range healthRecord {
 		rows = append(rows, table.Row{log.pluginName, log.command, log.description})
+		if n+1 <= len(healthRecord)-1 && (healthRecord[n].pluginName != healthRecord[n+1].pluginName) {
+			rows = append(rows, table.Row{"\n"})
+		}
 	}
 
 	styles.ShowTable(columns, rows)
