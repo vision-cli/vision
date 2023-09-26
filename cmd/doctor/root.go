@@ -1,19 +1,14 @@
-package cmd
+package doctor
 
 import (
 	"fmt"
-	"io/fs"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/log"
+	"github.com/spf13/cobra"
 
 	"github.com/vision-cli/vision/internal/plugin"
 	"github.com/vision-cli/vision/styles"
-
-	"github.com/spf13/cobra"
 )
 
 var RootCmd = &cobra.Command{
@@ -34,7 +29,7 @@ type healthLog struct {
 // Doctor command looks through available plugins and checks for plugin health.
 // If plugins commands are missing or incomplete, doctor returns them as faulty with a reason and prints them out.
 var doctorCommand = func(cmd *cobra.Command, args []string) error {
-	plugins := FindVisionPlugins()
+	plugins := plugin.Find()
 
 	for _, plug := range plugins {
 		log.Infof("The plugins available are: %v", plug.Name)
@@ -45,7 +40,7 @@ var doctorCommand = func(cmd *cobra.Command, args []string) error {
 		exe := plugin.NewExecutor(plug.FullPath)
 		var reason string
 		info, err := exe.Info()
-		// TODO (luke): add "not a string" catch to empty string checks
+		// TODO(luke): add "not a string" catch to empty string checks
 		command := "info"
 		if err != nil {
 			reason = fmt.Sprintf("%v", err)
@@ -156,55 +151,4 @@ func printTable() {
 	}
 
 	styles.ShowTable(columns, rows)
-}
-
-type PluginPath struct {
-	Name     string
-	Version  string
-	FullPath string
-}
-
-// Searches all dirs in the PATH envar to find binaries with specific vision formatting and assigns them to a map.
-// The formatting is `vision-plugin-[plugin-name]-[version-number]`
-func FindVisionPlugins() []PluginPath {
-	const prefix = "vision-plugin"
-
-	var plugins []PluginPath
-
-	sysPath := os.Getenv("PATH")
-	paths := strings.Split(sysPath, ":")
-
-	m := make(map[string]struct{})
-	for _, p := range paths {
-		m[p] = struct{}{}
-	}
-	var uniqPaths []string
-	for k := range m {
-		uniqPaths = append(uniqPaths, k)
-	}
-	paths = uniqPaths
-
-	for _, path := range uniqPaths {
-		filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
-			if info == nil {
-				return nil
-			}
-			if info.IsDir() {
-				return nil
-			}
-			if strings.HasPrefix(info.Name(), prefix) {
-				pluginSplit := strings.Split(info.Name(), "-")
-				if len(pluginSplit) == 4 { // only process correctly named plugins
-					name, version := pluginSplit[2], pluginSplit[3]
-					plugins = append(plugins, PluginPath{
-						Name:     name,
-						Version:  version,
-						FullPath: path,
-					})
-				}
-			}
-			return nil
-		})
-	}
-	return plugins
 }
