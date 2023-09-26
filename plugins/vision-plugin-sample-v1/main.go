@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 
 	"github.com/charmbracelet/log"
@@ -29,7 +30,9 @@ func main() {
 			log.Error(err)
 		}
 	case "generate":
-
+		json.NewEncoder(os.Stdout).Encode(map[string]bool{
+			"success": true,
+		})
 	}
 
 	// switch os.Args[1] {

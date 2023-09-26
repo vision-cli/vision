@@ -81,7 +81,18 @@ func createPluginCommandHandler(p plugin.Plugin) func(cmd *cobra.Command, args [
 				return err
 			}
 			log.Infof("plugin version: %v", v.SemVer)
+		case "generate":
+			g, err := exe.Generate()
+			if err != nil {
+				return err
+			}
+			if g.Success {
+				log.Info("plugin successfully generated")
+			} else {
+				log.Error("plugin failed to generate")
+			}
 		}
+
 		return nil
 	}
 }
