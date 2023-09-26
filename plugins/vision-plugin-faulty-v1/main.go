@@ -9,7 +9,7 @@ func main() {
 	switch os.Args[1] {
 	case "info":
 		json.NewEncoder(os.Stdout).Encode(map[string]string{
-			"short_description": "",
+			"short_description": "qwerty",
 		})
 	case "version":
 		json.NewEncoder(os.Stdout).Encode(map[string]string{
