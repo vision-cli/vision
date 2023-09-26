@@ -1,0 +1,1 @@
+This is the plug that is used to generate new plugins.
