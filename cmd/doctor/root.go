@@ -51,71 +51,54 @@ var doctorCmd = func(cmd *cobra.Command, args []string) error {
 	for _, p := range plugins {
 		// call each of the built in commands
 		exe := plugin.NewExecutor(p.FullPath)
-		var reasons []string
+		var infoReasons []string
 		info, err := exe.Info()
-		// TODO(luke): add "not a string" catch to empty string checks
 		switch {
 		case err != nil:
-			reasons = append(reasons, fmt.Sprintf("%v", err))
+			infoReasons = append(infoReasons, fmt.Sprintf("%v", err))
 		case info.ShortDescription == "":
-			reasons = append(reasons, "short description missing")
+			infoReasons = append(infoReasons, "short description missing")
 		case info.LongDescription == "":
-			reasons = append(reasons, "log description missing")
+			infoReasons = append(infoReasons, "long description missing")
 		}
 
-		if len(reasons) > 0 {
+		if len(infoReasons) > 0 {
 			invalidPlugins = append(invalidPlugins, ErrInvalidPlugin{
 				PluginName: p.Name,
 				Command:    "info",
-				Reasons:    reasons,
+				Reasons:    infoReasons,
 			})
 		}
 
-		// command = "init"
-		// ini, err := exe.Init()
-		// if err != nil {
-		// 	reason = fmt.Sprintf("%v", err)
-		// 	healthRecord = append(healthRecord, healthLog{
-		// 		pluginName:  p.Name,
-		// 		command:     command,
-		// 		description: reason,
-		// 	})
-		// } else if ini.Config == "" {
-		// 	reason = "config empty"
-		// 	healthRecord = append(healthRecord, healthLog{
-		// 		pluginName:  p.Name,
-		// 		command:     command,
-		// 		description: reason,
-		// 	})
-		// } else if ini.Config == nil {
-		// 	reason = "config missing"
-		// 	healthRecord = append(healthRecord, healthLog{
-		// 		pluginName:  p.Name,
-		// 		command:     command,
-		// 		description: reason,
-		// 	})
-		// }
+		ini, err := exe.Init()
+		var initReasons []string
+		switch {
+		case err != nil:
+			initReasons = append(initReasons, fmt.Sprintf("%v", err))
+		case ini.Config == "":
+			initReasons = append(initReasons, "config empty")
+		case ini.Config == nil:
+			initReasons = append(initReasons, "config missing")
+		}
 
-		// command = "version"
-		// vers, err := exe.Version()
-		// if err != nil {
-		// 	reason = fmt.Sprintf("%v", err)
-		// 	healthRecord = append(healthRecord, healthLog{
-		// 		pluginName:  p.Name,
-		// 		command:     command,
-		// 		description: reason,
-		// 	})
-		// } else if vers.SemVer == "" {
-		// 	reason = "semantic version missing"
-		// 	healthRecord = append(healthRecord, healthLog{
-		// 		pluginName:  p.Name,
-		// 		command:     command,
-		// 		description: reason,
-		// 	})
-		// }
+		if len(initReasons) > 0 {
+			invalidPlugins = append(invalidPlugins, ErrInvalidPlugin{
+				PluginName: p.Name,
+				Command:    "init",
+				Reasons:    initReasons,
+			})
+		}
+
+		vers, err := exe.Version()
+		var versReasons []string
+		switch {
+		case err != nil:
+			versReasons = append(versReasons, fmt.Sprintf("%v", err))
+		case vers.SemVer == "":
+			versReasons = append(versReasons, "semantic version empty")
+		}
 	}
-	// printTable(healthRecord)
-	// healthRecordPrinter(healthRecord)
+
 	for _, ip := range invalidPlugins {
 		fmt.Println(ip.Error())
 	}
