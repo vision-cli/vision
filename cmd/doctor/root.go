@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/bubbles/table"
-	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 
 	"github.com/vision-cli/vision/internal/plugin"
@@ -15,7 +14,7 @@ var RootCmd = &cobra.Command{
 	Use:   "doctor",
 	Short: "check status of plugins",
 	Long:  "Check the status of all plugins and their commands. If a command fails, it will log an error.",
-	RunE:  doctorCommand,
+	RunE:  doctorCmd,
 }
 
 var healthRecord []healthLog
@@ -26,90 +25,100 @@ type healthLog struct {
 	description string
 }
 
-// Doctor command looks through available plugins and checks for plugin health.
+type ErrInvalidPlugin struct {
+	PluginName string
+	Command    string
+	Reasons    []string
+}
+
+func (e ErrInvalidPlugin) Error() string {
+	out := ""
+	out += fmt.Sprintf("Plugin: %s\n", e.PluginName)
+	out += fmt.Sprintf("Command: %s\n\n", e.Command)
+	for _, reason := range e.Reasons {
+		out += fmt.Sprintf("    ->  %s\n", reason)
+	}
+	return out
+}
+
+// doctorCmd looks through available plugins and checks for plugin health.
 // If plugins commands are missing or incomplete, doctor returns them as faulty with a reason and prints them out.
-var doctorCommand = func(cmd *cobra.Command, args []string) error {
+var doctorCmd = func(cmd *cobra.Command, args []string) error {
 	plugins := plugin.Find()
 
-	for _, plug := range plugins {
-		log.Infof("The plugins available are: %v", plug.Name)
-	}
+	var invalidPlugins []error
 
-	for _, plug := range plugins {
+	for _, p := range plugins {
 		// call each of the built in commands
-		exe := plugin.NewExecutor(plug.FullPath)
-		var reason string
+		exe := plugin.NewExecutor(p.FullPath)
+		var reasons []string
 		info, err := exe.Info()
 		// TODO(luke): add "not a string" catch to empty string checks
-		command := "info"
-		if err != nil {
-			reason = fmt.Sprintf("%v", err)
-			healthRecord = append(healthRecord, healthLog{
-				pluginName:  plug.Name,
-				command:     command,
-				description: reason,
-			})
-		} else if info.ShortDescription == "" {
-			reason = "short description missing"
-			healthRecord = append(healthRecord, healthLog{
-				pluginName:  plug.Name,
-				command:     command,
-				description: reason,
-			})
-		} else if info.LongDescription == "" {
-			reason = "long description missing"
-			healthRecord = append(healthRecord, healthLog{
-				pluginName:  plug.Name,
-				command:     command,
-				description: reason,
+		switch {
+		case err != nil:
+			reasons = append(reasons, fmt.Sprintf("%v", err))
+		case info.ShortDescription == "":
+			reasons = append(reasons, "short description missing")
+		case info.LongDescription == "":
+			reasons = append(reasons, "log description missing")
+		}
+
+		if len(reasons) > 0 {
+			invalidPlugins = append(invalidPlugins, ErrInvalidPlugin{
+				PluginName: p.Name,
+				Command:    "info",
+				Reasons:    reasons,
 			})
 		}
 
-		command = "init"
-		ini, err := exe.Init()
-		if err != nil {
-			reason = fmt.Sprintf("%v", err)
-			healthRecord = append(healthRecord, healthLog{
-				pluginName:  plug.Name,
-				command:     command,
-				description: reason,
-			})
-		} else if ini.Config == "" {
-			reason = "config empty"
-			healthRecord = append(healthRecord, healthLog{
-				pluginName:  plug.Name,
-				command:     command,
-				description: reason,
-			})
-		} else if ini.Config == nil {
-			reason = "config missing"
-			healthRecord = append(healthRecord, healthLog{
-				pluginName:  plug.Name,
-				command:     command,
-				description: reason,
-			})
-		}
+		// command = "init"
+		// ini, err := exe.Init()
+		// if err != nil {
+		// 	reason = fmt.Sprintf("%v", err)
+		// 	healthRecord = append(healthRecord, healthLog{
+		// 		pluginName:  p.Name,
+		// 		command:     command,
+		// 		description: reason,
+		// 	})
+		// } else if ini.Config == "" {
+		// 	reason = "config empty"
+		// 	healthRecord = append(healthRecord, healthLog{
+		// 		pluginName:  p.Name,
+		// 		command:     command,
+		// 		description: reason,
+		// 	})
+		// } else if ini.Config == nil {
+		// 	reason = "config missing"
+		// 	healthRecord = append(healthRecord, healthLog{
+		// 		pluginName:  p.Name,
+		// 		command:     command,
+		// 		description: reason,
+		// 	})
+		// }
 
-		command = "version"
-		vers, err := exe.Version()
-		if err != nil {
-			reason = fmt.Sprintf("%v", err)
-			healthRecord = append(healthRecord, healthLog{
-				pluginName:  plug.Name,
-				command:     command,
-				description: reason,
-			})
-		} else if vers.SemVer == "" {
-			reason = "semantic version missing"
-			healthRecord = append(healthRecord, healthLog{
-				pluginName:  plug.Name,
-				command:     command,
-				description: reason,
-			})
-		}
+		// command = "version"
+		// vers, err := exe.Version()
+		// if err != nil {
+		// 	reason = fmt.Sprintf("%v", err)
+		// 	healthRecord = append(healthRecord, healthLog{
+		// 		pluginName:  p.Name,
+		// 		command:     command,
+		// 		description: reason,
+		// 	})
+		// } else if vers.SemVer == "" {
+		// 	reason = "semantic version missing"
+		// 	healthRecord = append(healthRecord, healthLog{
+		// 		pluginName:  p.Name,
+		// 		command:     command,
+		// 		description: reason,
+		// 	})
+		// }
 	}
-	printTable()
+	// printTable(healthRecord)
 	// healthRecordPrinter(healthRecord)
+	for _, ip := range invalidPlugins {
+		fmt.Println(ip.Error())
+	}
 	return nil
 }
 
@@ -135,7 +144,7 @@ var doctorCommand = func(cmd *cobra.Command, args []string) error {
 // 	printTable()
 // }
 
-func printTable() {
+func printTable(logs []healthLog) {
 	columns := []table.Column{
 		{Title: "Plugin", Width: 10},
 		{Title: "Command", Width: 10},
@@ -143,7 +152,7 @@ func printTable() {
 	}
 	rows := []table.Row{}
 	// TODO(genevieve): fix repeated plugin names
-	for n, log := range healthRecord {
+	for n, log := range logs {
 		rows = append(rows, table.Row{log.pluginName, log.command, log.description})
 		if n+1 <= len(healthRecord)-1 && (healthRecord[n].pluginName != healthRecord[n+1].pluginName) {
 			rows = append(rows, table.Row{"\n"})
