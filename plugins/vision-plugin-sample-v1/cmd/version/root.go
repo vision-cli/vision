@@ -1,6 +1,11 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"encoding/json"
+	"os"
+
+	"github.com/spf13/cobra"
+)
 
 var VersionRootCmd = &cobra.Command{
 	Use:   "version",
@@ -10,6 +15,9 @@ var VersionRootCmd = &cobra.Command{
 }
 
 var versionCmd = func(cmd *cobra.Command, args []string) error {
+	json.NewEncoder(os.Stdout).Encode(map[string]string{
+		"sem_ver": "0.0.1",
+	})
 
 	return nil
 }

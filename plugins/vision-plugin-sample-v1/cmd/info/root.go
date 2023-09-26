@@ -19,7 +19,6 @@ var InfoRootCmd = &cobra.Command{
 var infoOut string
 
 var sampleCmd = func(cmd *cobra.Command, args []string) error {
-
 	json.NewEncoder(os.Stdout).Encode(map[string]string{
 		"short_description": infoOut,
 		"long_description":  infoOut,
