@@ -34,23 +34,4 @@ func main() {
 			"success": true,
 		})
 	}
-
-	// switch os.Args[1] {
-	// case "info":
-	// 	json.NewEncoder(os.Stdout).Encode(map[string]string{
-	// 		"short_description": "sample plugin short desc",
-	// 	})
-	// case "version":
-	// 	json.NewEncoder(os.Stdout).Encode(map[string]string{
-	// 		"sem_ver": "v0.0.1",
-	// 	})
-	// case "init":
-	// 	json.NewEncoder(os.Stdout).Encode(map[string]any{
-	// 		"config": map[string]string{
-	// 			"subscriptionid": "value",
-	// 		},
-	// 	})
-	// case "generate":
-	// 	json.NewEncoder(os.Stdout).Encode("ACTION: generate new plugin")
-	// }
 }
