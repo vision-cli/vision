@@ -16,12 +16,12 @@ var InfoRootCmd = &cobra.Command{
 }
 
 //go:embed info.txt
-var infoOut string
+var infoOutput string
 
 var sampleCmd = func(cmd *cobra.Command, args []string) error {
 	json.NewEncoder(os.Stdout).Encode(map[string]string{
-		"short_description": infoOut,
-		"long_description":  infoOut,
+		"short_description": infoOutput,
+		"long_description":  infoOutput,
 	})
 
 	return nil

@@ -59,6 +59,7 @@ func createPluginCommandHandler(p plugin.Plugin) func(cmd *cobra.Command, args [
 	return func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 { // prevents index out of range
 			log.Warnf("No argument provided. Try: \n\t\n vision %v -v", cmd.Use)
+			return nil
 		}
 		exe := plugin.NewExecutor(p.FullPath)
 		switch args[0] {

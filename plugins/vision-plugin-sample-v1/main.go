@@ -7,13 +7,16 @@ import (
 	"github.com/charmbracelet/log"
 
 	info "github.com/vision-cli/vision/plugins/vision-plugin-sample-v1/cmd/info"
+	initialise "github.com/vision-cli/vision/plugins/vision-plugin-sample-v1/cmd/initialise"
 	version "github.com/vision-cli/vision/plugins/vision-plugin-sample-v1/cmd/version"
 )
 
 func main() {
 
 	if len(os.Args) < 1 {
-		return
+		if err := info.InfoRootCmd.Execute(); err != nil {
+			log.Error(err)
+		}
 	}
 
 	switch os.Args[1] {
@@ -33,5 +36,9 @@ func main() {
 		json.NewEncoder(os.Stdout).Encode(map[string]bool{
 			"success": true,
 		})
+	case "init":
+		if err := initialise.InitRootCmd.Execute(); err != nil {
+			log.Error(err)
+		}
 	}
 }
