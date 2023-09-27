@@ -17,7 +17,10 @@ func main() {
 		if err := info.InfoRootCmd.Execute(); err != nil {
 			log.Error(err)
 		}
+		return
 	}
+
+	var rootCmd = "sample"
 
 	switch os.Args[1] {
 	case "":
@@ -40,5 +43,7 @@ func main() {
 		if err := initialise.InitRootCmd.Execute(); err != nil {
 			log.Error(err)
 		}
+	case "help":
+		// returns json
 	}
 }
