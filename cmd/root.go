@@ -12,6 +12,7 @@ import (
 
 	"github.com/vision-cli/vision/cmd/doctor"
 	initialise "github.com/vision-cli/vision/cmd/init"
+	"github.com/vision-cli/vision/cmd/plugins"
 	"github.com/vision-cli/vision/internal/plugin"
 )
 
@@ -19,6 +20,7 @@ import (
 func init() {
 	rootCmd.AddCommand(initialise.RootCmd)
 	rootCmd.AddCommand(doctor.RootCmd)
+	rootCmd.AddCommand(plugins.PluginsCmd)
 	rootCmd.Flags().AddFlagSet(initVisionFlags())
 	plugins := plugin.Find()
 	for _, plugin := range plugins {
