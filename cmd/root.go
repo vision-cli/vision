@@ -61,7 +61,7 @@ func createPluginCommandHandler(p plugin.Plugin) func(cmd *cobra.Command, args [
 			log.Warnf("No argument provided. Try: \n\t\n vision %v -v", cmd.Use)
 			return nil
 		}
-		log.Info(args[0])
+		log.Info(args)
 		exe := plugin.NewExecutor(p.FullPath)
 		switch args[0] {
 		case "init":
@@ -76,7 +76,7 @@ func createPluginCommandHandler(p plugin.Plugin) func(cmd *cobra.Command, args [
 			if err != nil {
 				return err
 			}
-			log.Info(info)
+			log.Info(info.LongDescription)
 		case "version":
 			v, err := exe.Version()
 			if err != nil {

@@ -28,7 +28,7 @@ func initFlags() *pflag.FlagSet {
 }
 
 var RootCmd = &cobra.Command{
-	Use:   "init",
+	Use:   "vision init [PROJECT NAME] [OPTIONS]",
 	Short: "Initialise a new vision project",
 	Long:  "Create a new vision project and initialise default config values for vision and installed plugins",
 	RunE: func(cmd *cobra.Command, args []string) error {

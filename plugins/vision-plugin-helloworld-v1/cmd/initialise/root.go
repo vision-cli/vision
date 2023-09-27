@@ -30,11 +30,11 @@ var InitRootCmd = &cobra.Command{
 }
 
 var initCmd = func(cmd *cobra.Command, args []string) error {
+
 	const CONFIG = "config" // vision only accepts "config" as the config name
 	json.NewEncoder(os.Stdout).Encode(map[string]any{
-		CONFIG: map[string]string{
-			"key1": configValue,
-			"key2": "value",
+		CONFIG: map[string][]string{
+			"key1": args,
 		},
 	})
 	return nil

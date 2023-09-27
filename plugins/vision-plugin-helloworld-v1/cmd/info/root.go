@@ -20,7 +20,7 @@ var infoOutput string
 
 var sampleCmd = func(cmd *cobra.Command, args []string) error {
 	json.NewEncoder(os.Stdout).Encode(map[string]string{
-		"short_description": infoOutput,
+		"short_description": "a hello world example plugin",
 		"long_description":  infoOutput,
 	})
 
