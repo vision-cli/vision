@@ -3,6 +3,7 @@ package cmd
 import (
 	_ "embed"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 
@@ -31,6 +32,27 @@ func init() {
 			continue
 		}
 		rootCmd.AddCommand(cmd)
+	}
+}
+
+func initVisionFlags() *pflag.FlagSet {
+	fs := pflag.NewFlagSet("vision", 1)
+	return fs
+}
+
+//go:embed example.txt
+var exampleText string
+
+var rootCmd = &cobra.Command{
+	Use:     "vision",
+	Short:   "A developer productivity tool",
+	Long:    `Vision is a tool to create microservice platforms and microservice scaffolding code`,
+	Example: exampleText,
+}
+
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		log.Error(err)
 	}
 }
 
@@ -69,8 +91,22 @@ func createPluginCommandHandler(p plugin.Plugin) func(cmd *cobra.Command, args [
 			if err != nil {
 				return err
 			}
-			// TODO merge into vision config
-			mergeConfigs(p.Name, i.Config)
+			err = mergeConfigs(p.Name, i.Config)
+			if err != nil {
+				return err
+			}
+		case "info":
+			info, err := exe.Info()
+			if err != nil {
+				return err
+			}
+			fmt.Println(info.LongDescription)
+		case "version":
+			v, err := exe.Version()
+			if err != nil {
+				return err
+			}
+			fmt.Println(v.SemVer)
 		}
 		return nil
 	}
@@ -126,25 +162,4 @@ func mergeConfigs(pluginName string, config any) error {
 
 	writeSuccess = true
 	return nil
-}
-
-func initVisionFlags() *pflag.FlagSet {
-	fs := pflag.NewFlagSet("vision", 1)
-	return fs
-}
-
-//go:embed example.txt
-var exampleText string
-
-var rootCmd = &cobra.Command{
-	Use:     "vision",
-	Short:   "A developer productivity tool",
-	Long:    `Vision is a tool to create microservice platforms and microservice scaffolding code`,
-	Example: exampleText,
-}
-
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		log.Error(err)
-	}
 }
