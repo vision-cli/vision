@@ -1,4 +1,4 @@
-package list
+package plugins
 
 import (
 	"fmt"
@@ -8,15 +8,15 @@ import (
 	"github.com/vision-cli/vision/internal/plugin"
 )
 
-var RootCmd = &cobra.Command{
+var listCmd = &cobra.Command{
 	Use:     "list",
 	Aliases: []string{"ls"},
-	Short:   "List all installed vision plugins.",
-	Long:    "",
-	Run:     listCmd,
+	Short:   "List all installed vision plugins",
+	Long:    "List all installed vision plugins",
+	Run:     cmd,
 }
 
-var listCmd = func(cmd *cobra.Command, args []string) {
+var cmd = func(cmd *cobra.Command, args []string) {
 	plugins := plugin.Find()
 	for _, p := range plugins {
 		fmt.Println(p.Name)
