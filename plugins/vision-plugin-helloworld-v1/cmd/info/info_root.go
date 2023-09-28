@@ -22,14 +22,14 @@ type Flag struct {
 	Type      string
 }
 
-var flags []*Flag
+var initFlags []*Flag
 
 var visit = func(f *pflag.Flag) {
 
-	flags = append(flags, &Flag{
+	initFlags = append(initFlags, &Flag{
 		Name:      f.Name,
 		Shorthand: f.Shorthand,
-		Usage:     f.Value.Type(),
+		Usage:     f.Usage,
 		Type:      f.Value.Type(),
 	})
 	// log.Infof("visit all pflag function: %v", f)
@@ -50,7 +50,7 @@ var sampleCmd = func(cmd *cobra.Command, args []string) error {
 	json.NewEncoder(os.Stdout).Encode(map[string]any{
 		"short_description": "a hello world example plugin",
 		"long_description":  infoOutput,
-		"flags":             flags,
+		"init_flags":        initFlags,
 	})
 
 	return nil

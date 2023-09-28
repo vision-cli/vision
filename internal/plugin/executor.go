@@ -19,9 +19,9 @@ func NewExecutor(path string, args []string) Executor {
 }
 
 type Info struct {
-	ShortDescription string `json:"short_description"`
-	LongDescription  string `json:"long_description"`
-	Flags            []*flag
+	ShortDescription string  `json:"short_description"`
+	LongDescription  string  `json:"long_description"`
+	InitFlags        []*flag `json:"init_flags"`
 }
 
 type flag struct {
