@@ -44,12 +44,6 @@ func createCommand(p plugin.Plugin) (*cobra.Command, error) {
 	if err != nil {
 		return nil, err
 	}
-	init, err := exe.Init()
-	if err != nil {
-		return nil, err
-	}
-
-	log.Infof("cmd/root.go createCommand() init: %v", init)
 
 	cobraCmd := &cobra.Command{
 		Use:     p.Name,
