@@ -34,7 +34,8 @@ func init() {
 
 // createCommand takes in a plugin and returns a cobra command to interact with that plugin
 func createCommand(p plugin.Plugin) (*cobra.Command, error) {
-	exe := plugin.NewExecutor(p.FullPath)
+	var emptyArgsArr []string // used to initialise plugins and satisfy NewExecutor()
+	exe := plugin.NewExecutor(p.FullPath, emptyArgsArr)
 	info, err := exe.Info()
 	if err != nil {
 		return nil, err
@@ -50,6 +51,7 @@ func createCommand(p plugin.Plugin) (*cobra.Command, error) {
 		Short:   info.ShortDescription,
 		Long:    info.LongDescription,
 		RunE:    createPluginCommandHandler(p),
+		// FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 	}
 
 	return cobraCmd, nil
@@ -61,8 +63,8 @@ func createPluginCommandHandler(p plugin.Plugin) func(cmd *cobra.Command, args [
 			log.Warnf("No argument provided. Try: \n\t\n vision %v -v", cmd.Use)
 			return nil
 		}
-		log.Info(args)
-		exe := plugin.NewExecutor(p.FullPath)
+		log.Infof("cmd/root.go: %v", args)
+		exe := plugin.NewExecutor(p.FullPath, args)
 		switch args[0] {
 		case "init":
 			i, err := exe.Init()
@@ -160,10 +162,11 @@ func initVisionFlags() *pflag.FlagSet {
 var exampleText string
 
 var rootCmd = &cobra.Command{
-	Use:     "vision",
-	Short:   "A developer productivity tool",
-	Long:    `Vision is a tool to create microservice platforms and microservice scaffolding code`,
-	Example: exampleText,
+	Use:                "vision",
+	Short:              "A developer productivity tool",
+	Long:               `Vision is a tool to create microservice platforms and microservice scaffolding code`,
+	Example:            exampleText,
+	FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 }
 
 func Execute() {

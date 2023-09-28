@@ -9,11 +9,10 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
 func init() {
-	RootCmd.Flags().AddFlagSet(initFlags())
+	RootCmd.PersistentFlags().StringVarP(&projectName, "project", "p", "", "project name")
 }
 
 // left as an example of flags for future reference
@@ -21,49 +20,46 @@ var (
 	projectName string
 )
 
-func initFlags() *pflag.FlagSet {
-	fs := pflag.NewFlagSet("init", 1)
-	fs.StringVarP(&projectName, "project", "p", "", "project name")
-	return fs
-}
-
 var RootCmd = &cobra.Command{
-	Use:   "vision init [PROJECT_NAME] [OPTIONS]",
+	Use:   "init [DIR_NAME]",
 	Short: "Initialise a new vision project",
 	Long:  "Create a new vision project and initialise default config values for vision and installed plugins",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) > 1 {
-			log.Info("usage: vision init [projectname]")
-			return errors.New("unexpected arguments")
-		}
+	RunE:  cmdHandler,
+	// PersistentFlags: ,
+}
 
-		// take the current dir name to use as project name
-		dir, err := os.Getwd()
-		if err != nil {
-			return err
-		}
+var cmdHandler = func(cmd *cobra.Command, args []string) error {
+	if len(args) > 1 {
+		log.Info("usage: vision init [projectname]")
+		return errors.New("unexpected arguments")
+	}
 
-		var projectDir string
-		if len(args) == 0 {
-			projectDir = ""
-			if projectName == "" { // flag not set by user so we set project name here
-				projectName = filepath.Base(dir)
-			}
-		} else {
-			projectDir = args[0]
-			if projectName == "" { // flag not set by user so we set project name here
-				projectName = args[0]
-			}
-		}
+	// take the current dir name to use as project name
+	dir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
 
-		configFilePath := filepath.Join(dir, projectDir, configFileName)
-		err = createDefaultConfig(configFilePath, projectName, projectDir)
-		if err != nil {
-			return err
+	var projectDir string
+	if len(args) == 0 {
+		projectDir = ""
+		if projectName == "" { // flag not set by user so we set project name here
+			projectName = filepath.Base(dir)
 		}
-		log.Info("successfully initialised vision")
-		return nil
-	},
+	} else {
+		projectDir = args[0]
+		if projectName == "" { // flag not set by user so we set project name here
+			projectName = args[0]
+		}
+	}
+
+	configFilePath := filepath.Join(dir, projectDir, configFileName)
+	err = createDefaultConfig(configFilePath, projectName, projectDir)
+	if err != nil {
+		return err
+	}
+	log.Info("successfully initialised vision")
+	return nil
 }
 
 const configFileName = "vision.json"

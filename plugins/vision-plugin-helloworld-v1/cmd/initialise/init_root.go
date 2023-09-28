@@ -5,22 +5,22 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
+	// "github.com/spf13/pflag"
 )
 
 func init() {
-	InitRootCmd.Flags().AddFlagSet(initialiseFlags())
+	InitRootCmd.PersistentFlags().StringVarP(&configValue, "confValue", "c", "", "set the config value")
 }
 
 var (
 	configValue string
 )
 
-func initialiseFlags() *pflag.FlagSet {
-	fs := pflag.NewFlagSet("init", 1)
-	fs.StringVarP(&configValue, "confValue", "c", "", "set the config value")
-	return fs
-}
+// func initialiseFlags() *pflag.FlagSet {
+// 	fs := pflag.NewFlagSet("init", 1)
+// 	fs.
+// 	return fs
+// }
 
 var InitRootCmd = &cobra.Command{
 	Use:   "init",

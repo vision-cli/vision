@@ -16,7 +16,8 @@ func init() {
 }
 
 var rootCmd = &cobra.Command{
-	Use: "helloworld",
+	Use:                "helloworld",
+	FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 }
 
 func Execute() {

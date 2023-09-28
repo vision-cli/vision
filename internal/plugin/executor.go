@@ -8,10 +8,14 @@ import (
 
 type Executor struct {
 	FullPath string
+	Args     []string
 }
 
-func NewExecutor(path string) Executor {
-	return Executor{FullPath: path}
+func NewExecutor(path string, args []string) Executor {
+	return Executor{
+		FullPath: path,
+		Args:     args,
+	}
 }
 
 type Info struct {
@@ -61,7 +65,10 @@ type Init struct {
 }
 
 func (e Executor) Init() (*Init, error) {
-	cmd := exec.Command(e.FullPath, "init")
+	// if e.Args[0] != "init" {
+	// 	return nil, fmt.Errorf("Expected init to be called")
+	// }
+	cmd := exec.Command(e.FullPath, e.Args...)
 	b, err := cmd.Output()
 	if err != nil {
 		return nil, err
