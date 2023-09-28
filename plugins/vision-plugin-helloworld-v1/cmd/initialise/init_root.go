@@ -12,10 +12,12 @@ func init() {
 	InitRootCmd.PersistentFlags().StringVarP(&configValue, "confValue", "c", "", "set the config value")
 	InitRootCmd.PersistentFlags().StringVarP(&configValue, "testValue", "t", "", "set the test value")
 	InitRootCmd.PersistentFlags().StringVarP(&configValue, "anotherValue", "a", "", "set another value")
+	InitRootCmd.PersistentFlags().BoolVarP(&boolValue, "boolValue", "b", false, "set a bool value")
 }
 
 var (
 	configValue string
+	boolValue   bool
 )
 
 // func initialiseFlags() *pflag.FlagSet {

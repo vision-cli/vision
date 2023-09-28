@@ -19,6 +19,7 @@ type Flag struct {
 	Name      string
 	Shorthand string
 	Usage     string
+	Type      string
 }
 
 var flags []*Flag
@@ -28,7 +29,8 @@ var visit = func(f *pflag.Flag) {
 	flags = append(flags, &Flag{
 		Name:      f.Name,
 		Shorthand: f.Shorthand,
-		Usage:     f.Usage,
+		Usage:     f.Value.Type(),
+		Type:      f.Value.Type(),
 	})
 	// log.Infof("visit all pflag function: %v", f)
 }

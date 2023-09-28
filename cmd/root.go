@@ -51,7 +51,6 @@ func createCommand(p plugin.Plugin) (*cobra.Command, error) {
 		Short:   info.ShortDescription,
 		Long:    info.LongDescription,
 		RunE:    createPluginCommandHandler(p),
-		// FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 	}
 
 	return cobraCmd, nil
