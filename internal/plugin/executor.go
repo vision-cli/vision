@@ -73,3 +73,21 @@ func (e Executor) Init() (*Init, error) {
 	}
 	return &i, nil
 }
+
+type Generate struct {
+	Success bool `json:"success"`
+}
+
+func (e Executor) Generate() (*Generate, error) {
+	cmd := exec.Command(e.FullPath, "generate")
+	b, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+	var g Generate
+	err = json.Unmarshal(b, &g)
+	if err != nil {
+		return nil, err
+	}
+	return &g, nil
+}

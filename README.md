@@ -39,6 +39,55 @@ boilerplate.
 
 ## Usage
 
+### Initialising
+
+To initialise vision and create a vision.json config file where the project name is the same as the directory name:
+
+```bash
+vision init 
+```
+
+However, if you want to specify a project name, you can use the -p flag.
+
+```bash
+vision init -p [projectname]
+```
+
+If you want to create a vision config file inside of a new directory, you can run vision init like so:
+
+```bash
+vision init [dirName] -p [projectName]
+```
+
+### Creating a plugin
+
+
+```bash
+vision create
+```
+
+### Plugin information
+
+To list all of the available plugins:
+
+```bash
+vision plugin list
+```
+
+If you want to omit all faulty plugins and only show working plugins, you can use the -w flag.
+
+```bash
+vision plugin list -w
+```
+
+To check plugin health and list reasons why plugins are faulty:
+
+```bash
+vision doctor
+```
+
+<!-- Add more commands when commands have been created -->
+
 ## Design
 
 The vision cli is really a wrapper around vision plugins. The cli's purpose is to provide helper functions around managing plugins. The plugins will do the code generation.
@@ -48,3 +97,19 @@ Ideally projects are created using vision and services are added using vision. T
 Plugins can be made with vision, and should adhere to the vision plugin API.
 
 ## Best practises
+
+When creating plugins to use with vision, these commands must always be included:
+
+```bash
+
+info
+
+version
+
+init
+
+generate
+
+```
+
+See vision-plugin-sample-v1 for a complete template of what a plugin should look like.

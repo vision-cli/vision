@@ -55,7 +55,7 @@ var doctorCmd = func(cmd *cobra.Command, args []string) error {
 		info, err := exe.Info()
 		switch {
 		case err != nil:
-			infoReasons = append(infoReasons, fmt.Sprintf("%v", err))
+			infoReasons = append(infoReasons, fmt.Sprintf("the command returned an error, the command might not be implemented: %v", err))
 		case info.ShortDescription == "":
 			infoReasons = append(infoReasons, "short description missing")
 		case info.LongDescription == "":
@@ -74,7 +74,7 @@ var doctorCmd = func(cmd *cobra.Command, args []string) error {
 		var initReasons []string
 		switch {
 		case err != nil:
-			initReasons = append(initReasons, fmt.Sprintf("%v", err))
+			initReasons = append(initReasons, fmt.Sprintf("the command returned an error, the command might not be implemented: %v", err))
 		case ini.Config == "":
 			initReasons = append(initReasons, "config empty")
 		case ini.Config == nil:
@@ -93,10 +93,37 @@ var doctorCmd = func(cmd *cobra.Command, args []string) error {
 		var versReasons []string
 		switch {
 		case err != nil:
-			versReasons = append(versReasons, fmt.Sprintf("%v", err))
+			versReasons = append(versReasons, fmt.Sprintf("the command returned an error, the command might not be implemented: %v", err))
 		case vers.SemVer == "":
 			versReasons = append(versReasons, "semantic version empty")
 		}
+
+		if len(versReasons) > 0 {
+			invalidPlugins = append(invalidPlugins, ErrInvalidPlugin{
+				PluginName: p.Name,
+				Command:    "version",
+				Reasons:    versReasons,
+			})
+		}
+
+		// TODO(genevieve): add more cases for generate output/missing fields, add test flag to generate
+		gen, err := exe.Generate()
+		var genReasons []string
+		switch {
+		case err != nil:
+			genReasons = append(genReasons, fmt.Sprintf("the command returned an error, the command might not be implemented: %v", err))
+		case !gen.Success:
+			genReasons = append(genReasons, "generate implementation missing")
+		}
+
+		if len(genReasons) > 0 {
+			invalidPlugins = append(invalidPlugins, ErrInvalidPlugin{
+				PluginName: p.Name,
+				Command:    "generate",
+				Reasons:    genReasons,
+			})
+		}
+
 	}
 
 	for _, ip := range invalidPlugins {

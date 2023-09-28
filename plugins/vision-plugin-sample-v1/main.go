@@ -23,5 +23,9 @@ func main() {
 			},
 		},
 		)
+	case "generate":
+		json.NewEncoder(os.Stdout).Encode(map[string]bool{
+			"success": false,
+		})
 	}
 }
