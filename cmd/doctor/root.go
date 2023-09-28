@@ -10,11 +10,11 @@ import (
 	"github.com/vision-cli/vision/styles"
 )
 
-var RootCmd = &cobra.Command{
+var DoctorCmd = &cobra.Command{
 	Use:   "doctor",
 	Short: "check status of plugins",
 	Long:  "Check the status of all plugins and their commands. If a command fails, it will log an error.",
-	RunE:  doctorCmd,
+	RunE:  cmdHandler,
 }
 
 var healthRecord []healthLog
@@ -41,9 +41,9 @@ func (e ErrInvalidPlugin) Error() string {
 	return out
 }
 
-// doctorCmd looks through available plugins and checks for plugin health.
+// cmdHandler looks through available plugins and checks for plugin health.
 // If plugins commands are missing or incomplete, doctor returns them as faulty with a reason and prints them out.
-var doctorCmd = func(cmd *cobra.Command, args []string) error {
+var cmdHandler = func(cmd *cobra.Command, args []string) error {
 	plugins := plugin.Find()
 
 	var invalidPlugins []error
@@ -131,28 +131,6 @@ var doctorCmd = func(cmd *cobra.Command, args []string) error {
 	}
 	return nil
 }
-
-// func addToHealthRecord(pluginName string, command string, reason string) {
-// 	healthCheck := fmt.Sprintf("%v is faulty. Reason: %v", command, reason)
-// 	healthRecord = append(healthRecord, pluginName, healthCheck)
-// }
-
-// func healthRecordPrinter(healthRecord []healthLog) {
-// 	var curPlugin string
-// 	for n, hr := range healthRecord {
-// 		// where indexes are even and different to the previous plugin, print out the plugin name
-// 		if n == 0 || n%2 == 0 {
-// 			if curPlugin != healthRecord[n] {
-// 				curPlugin = healthRecord[n]
-// 				fmt.Println(styles.DoctorInfoStyle.String() + styles.DoctorPluginNameStyle.Render(strings.ToUpper(curPlugin)))
-// 				// fmt.Printf("\nDetails for plugin: %v\n", curPlugin)
-// 			}
-// 		} else {
-// 			log.Warn(hr)
-// 		}
-// 	}
-// 	printTable()
-// }
 
 func printTable(logs []healthLog) {
 	columns := []table.Column{

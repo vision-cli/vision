@@ -18,7 +18,7 @@ import (
 // Finds available plugins and initialises them into commands
 func init() {
 	rootCmd.AddCommand(initialise.RootCmd)
-	rootCmd.AddCommand(doctor.RootCmd)
+	rootCmd.AddCommand(doctor.DoctorCmd)
 	rootCmd.Flags().AddFlagSet(initVisionFlags())
 	plugins := plugin.Find()
 	for _, plugin := range plugins {
