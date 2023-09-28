@@ -47,3 +47,15 @@ Ideally projects are created using vision and services are added using vision. T
 Plugins can be made with vision, and should adhere to the vision plugin API.
 
 ## Best practises
+
+1. vision searches for plugins via looping through paths
+2. creates an array of plugin names
+3. vision calls plugins using a "find out more" function
+4. plugin returns json with all flags for all commands
+5. vision uses that JSON file to create flags on the commands
+
+`vision helloworld init --config-value qwerty`
+
+vision -> helloworld -> init -> --config-value
+
+exe.Command(/path/to/helloworld init -c configValue)

@@ -44,6 +44,12 @@ func createCommand(p plugin.Plugin) (*cobra.Command, error) {
 	if err != nil {
 		return nil, err
 	}
+	init, err := exe.Init()
+	if err != nil {
+		return nil, err
+	}
+
+	log.Infof("cmd/root.go createCommand() init: %v", init)
 
 	cobraCmd := &cobra.Command{
 		Use:     p.Name,
@@ -162,11 +168,24 @@ func initVisionFlags() *pflag.FlagSet {
 var exampleText string
 
 var rootCmd = &cobra.Command{
-	Use:                "vision",
-	Short:              "A developer productivity tool",
-	Long:               `Vision is a tool to create microservice platforms and microservice scaffolding code`,
-	Example:            exampleText,
-	FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
+	Use:     "vision",
+	Short:   "A developer productivity tool",
+	Long:    `Vision is a tool to create microservice platforms and microservice scaffolding code`,
+	Example: exampleText,
+	// FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
+	// RunE: func(cmd *cobra.Command, args []string) error {
+	// 	log.Infof("cmd/root.go vision command args: %v", args)
+
+	// 	plugins := plugin.Find()
+	// 	for _, p := range plugins {
+	// 		exe := plugin.NewExecutor(p.FullPath, args)
+	// 		if p.Name == args[0] {
+	// 			exe.Init()
+	// 		}
+	// 	}
+
+	// 	return nil
+	// },
 }
 
 func Execute() {
