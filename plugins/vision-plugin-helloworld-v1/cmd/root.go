@@ -10,9 +10,9 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(initialise.InitRootCmd)
-	rootCmd.AddCommand(info.InfoRootCmd)
-	rootCmd.AddCommand(version.VersionRootCmd)
+	rootCmd.AddCommand(initialise.InitCmd)
+	rootCmd.AddCommand(info.InfoCmd)
+	rootCmd.AddCommand(version.VersionCmd)
 }
 
 var rootCmd = &cobra.Command{

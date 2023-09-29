@@ -12,7 +12,7 @@ import (
 )
 
 func init() {
-	initialise.InitRootCmd.PersistentFlags().VisitAll(visit)
+	initialise.InitCmd.PersistentFlags().VisitAll(visit)
 }
 
 type Flag struct {
@@ -25,7 +25,6 @@ type Flag struct {
 var initFlags []*Flag
 
 var visit = func(f *pflag.Flag) {
-
 	initFlags = append(initFlags, &Flag{
 		Name:      f.Name,
 		Shorthand: f.Shorthand,
@@ -35,23 +34,18 @@ var visit = func(f *pflag.Flag) {
 	// log.Infof("visit all pflag function: %v", f)
 }
 
-var InfoRootCmd = &cobra.Command{
-	Use:   "info",
-	Short: "return info about the plugin",
-	Long:  "ditto",
-	RunE:  sampleCmd,
-}
-
 //go:embed info.txt
 var infoOutput string
 
-var sampleCmd = func(cmd *cobra.Command, args []string) error {
-
-	json.NewEncoder(os.Stdout).Encode(map[string]any{
-		"short_description": "a hello world example plugin",
-		"long_description":  infoOutput,
-		"init_flags":        initFlags,
-	})
-
-	return nil
+var InfoCmd = &cobra.Command{
+	Use:   "info",
+	Short: "return info about the plugin",
+	Long:  "ditto",
+	Run: func(cmd *cobra.Command, args []string) {
+		json.NewEncoder(os.Stdout).Encode(map[string]any{
+			"short_description": "a hello world example plugin",
+			"long_description":  infoOutput,
+			"init_flags":        initFlags,
+		})
+	},
 }

@@ -3,25 +3,24 @@ package plugin
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 )
 
 type Executor struct {
 	FullPath string
-	Args     []string
 }
 
-func NewExecutor(path string, args []string) Executor {
+func NewExecutor(path string) Executor {
 	return Executor{
 		FullPath: path,
-		Args:     args,
 	}
 }
 
 type Info struct {
 	ShortDescription string  `json:"short_description"`
 	LongDescription  string  `json:"long_description"`
-	InitFlags        []*flag `json:"init_flags"`
+	Flags            []*flag `json:"init_flags"`
 }
 
 type flag struct {
@@ -73,10 +72,7 @@ type Init struct {
 }
 
 func (e Executor) Init() (*Init, error) {
-	// if e.Args[0] != "init" {
-	// 	return nil, fmt.Errorf("Expected init to be called")
-	// }
-	cmd := exec.Command(e.FullPath, e.Args...)
+	cmd := exec.Command(e.FullPath, os.Args[2:]...)
 	b, err := cmd.Output()
 	if err != nil {
 		return nil, err

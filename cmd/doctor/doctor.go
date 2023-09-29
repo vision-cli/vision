@@ -40,7 +40,7 @@ var cmd = func(cmd *cobra.Command, args []string) {
 
 	for _, p := range plugins {
 		// call each of the built in commands
-		exe := plugin.NewExecutor(p.FullPath, []string{})
+		exe := plugin.NewExecutor(p.FullPath)
 		var reasons []string
 		info, err := exe.Info()
 		switch {

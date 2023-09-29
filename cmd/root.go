@@ -44,11 +44,15 @@ func initVisionFlags() *pflag.FlagSet {
 var exampleText string
 
 var rootCmd = &cobra.Command{
-	Use:     "vision",
-	Short:   "A developer productivity tool",
-	Long:    `Vision is a tool to create microservice platforms and microservice scaffolding code`,
-	Example: exampleText,
-	// FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
+	Use:                "vision",
+	Short:              "A developer productivity tool",
+	Long:               `Vision is a tool to create microservice platforms and microservice scaffolding code`,
+	Example:            exampleText,
+	FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
+	// Run: func(cmd *cobra.Command, args []string) {
+	// 	fmt.Println(args)
+	// 	fmt.Println(os.Args)
+	// },
 	// RunE: func(cmd *cobra.Command, args []string) error {
 	// 	log.Infof("cmd/root.go vision command args: %v", args)
 
@@ -72,8 +76,10 @@ func Execute() {
 
 // createCommand takes in a plugin and returns a cobra command to interact with that plugin
 func createCommand(p plugin.Plugin) (*cobra.Command, error) {
-	var emptyArgsArr []string // used to initialise plugins and satisfy NewExecutor()
-	exe := plugin.NewExecutor(p.FullPath, emptyArgsArr)
+	// we want to only send to the commands, args and flags that are ignored by cobra.
+	// cobra does not appear to provide a way to get just the ignored args.
+
+	exe := plugin.NewExecutor(p.FullPath)
 	info, err := exe.Info()
 	if err != nil {
 		return nil, err
@@ -101,7 +107,7 @@ func createPluginCommandHandler(p plugin.Plugin) func(cmd *cobra.Command, args [
 			return nil
 		}
 		log.Infof("cmd/root.go: %v", args)
-		exe := plugin.NewExecutor(p.FullPath, args)
+		exe := plugin.NewExecutor(p.FullPath)
 		switch args[0] {
 		case "init":
 			i, err := exe.Init()
