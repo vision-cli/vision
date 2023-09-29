@@ -44,11 +44,10 @@ func initVisionFlags() *pflag.FlagSet {
 var exampleText string
 
 var rootCmd = &cobra.Command{
-	Use:                "vision",
-	Short:              "A developer productivity tool",
-	Long:               `Vision is a tool to create microservice platforms and microservice scaffolding code`,
-	Example:            exampleText,
-	FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
+	Use:     "vision",
+	Short:   "A developer productivity tool",
+	Long:    `Vision is a tool to create microservice platforms and microservice scaffolding code`,
+	Example: exampleText,
 	// Run: func(cmd *cobra.Command, args []string) {
 	// 	fmt.Println(args)
 	// 	fmt.Println(os.Args)
@@ -90,11 +89,12 @@ func createCommand(p plugin.Plugin) (*cobra.Command, error) {
 	}
 
 	cobraCmd := &cobra.Command{
-		Use:     p.Name,
-		Version: version.SemVer,
-		Short:   info.ShortDescription,
-		Long:    info.LongDescription,
-		RunE:    createPluginCommandHandler(p),
+		Use:                p.Name,
+		Version:            version.SemVer,
+		Short:              info.ShortDescription,
+		Long:               info.LongDescription,
+		RunE:               createPluginCommandHandler(p),
+		FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 	}
 
 	return cobraCmd, nil
@@ -106,7 +106,6 @@ func createPluginCommandHandler(p plugin.Plugin) func(cmd *cobra.Command, args [
 			log.Warnf("No argument provided. Try: \n\t\n vision %v -v", cmd.Use)
 			return nil
 		}
-		log.Infof("cmd/root.go: %v", args)
 		exe := plugin.NewExecutor(p.FullPath)
 		switch args[0] {
 		case "init":

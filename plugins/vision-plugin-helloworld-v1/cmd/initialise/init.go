@@ -32,8 +32,10 @@ var InitCmd = &cobra.Command{
 	Long:  "initialise a project's vision.json file with this plugin's configuration values",
 	Run: func(cmd *cobra.Command, args []string) {
 		json.NewEncoder(os.Stdout).Encode(map[string]any{
-			"config": map[string]string{ // vision only accepts "config" as the config name
-				"key1": configValue,
+			"config": map[string]any{ // vision only accepts "config" as the config name
+				"key1":            configValue,
+				"HW: system args": os.Args,
+				"HW: cobra args":  args,
 			},
 		})
 	}}
