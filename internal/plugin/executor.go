@@ -18,22 +18,14 @@ func NewExecutor(path string) Executor {
 }
 
 type Info struct {
-	ShortDescription string  `json:"short_description"`
-	LongDescription  string  `json:"long_description"`
-	Flags            []*flag `json:"init_flags"`
-}
-
-type flag struct {
-	Name      string
-	Shorthand string
-	Usage     string
-	Type      string
+	ShortDescription string `json:"short_description"`
+	LongDescription  string `json:"long_description"`
 }
 
 // info returns usage and descriptions of the plugin
 // TODO(steve): make info resp part of the plugin API
 func (e Executor) Info() (*Info, error) {
-	cmd := exec.Command(e.FullPath, "info")
+	cmd := exec.Command(e.FullPath, append([]string{"info"}, os.Args[3:]...)...)
 	b, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -54,7 +46,7 @@ type Version struct {
 
 // TODO(steve): make version resp part of the plugin API
 func (e Executor) Version() (*Version, error) {
-	cmd := exec.Command(e.FullPath, "version")
+	cmd := exec.Command(e.FullPath, append([]string{"version"}, os.Args[3:]...)...)
 	b, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -72,7 +64,7 @@ type Init struct {
 }
 
 func (e Executor) Init() (*Init, error) {
-	cmd := exec.Command(e.FullPath, os.Args[2:]...)
+	cmd := exec.Command(e.FullPath, append([]string{"init"}, os.Args[3:]...)...)
 	b, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -90,7 +82,7 @@ type Generate struct {
 }
 
 func (e Executor) Generate() (*Generate, error) {
-	cmd := exec.Command(e.FullPath, "generate")
+	cmd := exec.Command(e.FullPath, append([]string{"generate"}, os.Args[3:]...)...)
 	b, err := cmd.Output()
 	if err != nil {
 		return nil, err

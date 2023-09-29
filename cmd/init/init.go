@@ -13,7 +13,6 @@ import (
 )
 
 func init() {
-	InitCmd.PersistentFlags().StringVarP(&projectName, "project", "p", "", "project name")
 	InitCmd.Flags().AddFlagSet(initFlags())
 }
 

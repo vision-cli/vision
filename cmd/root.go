@@ -48,23 +48,6 @@ var rootCmd = &cobra.Command{
 	Short:   "A developer productivity tool",
 	Long:    `Vision is a tool to create microservice platforms and microservice scaffolding code`,
 	Example: exampleText,
-	// Run: func(cmd *cobra.Command, args []string) {
-	// 	fmt.Println(args)
-	// 	fmt.Println(os.Args)
-	// },
-	// RunE: func(cmd *cobra.Command, args []string) error {
-	// 	log.Infof("cmd/root.go vision command args: %v", args)
-
-	// 	plugins := plugin.Find()
-	// 	for _, p := range plugins {
-	// 		exe := plugin.NewExecutor(p.FullPath, args)
-	// 		if p.Name == args[0] {
-	// 			exe.Init()
-	// 		}
-	// 	}
-
-	// 	return nil
-	// },
 }
 
 func Execute() {
@@ -75,9 +58,6 @@ func Execute() {
 
 // createCommand takes in a plugin and returns a cobra command to interact with that plugin
 func createCommand(p plugin.Plugin) (*cobra.Command, error) {
-	// we want to only send to the commands, args and flags that are ignored by cobra.
-	// cobra does not appear to provide a way to get just the ignored args.
-
 	exe := plugin.NewExecutor(p.FullPath)
 	info, err := exe.Info()
 	if err != nil {
@@ -103,8 +83,7 @@ func createCommand(p plugin.Plugin) (*cobra.Command, error) {
 func createPluginCommandHandler(p plugin.Plugin) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 { // prevents index out of range
-			log.Warnf("No argument provided. Try: \n\t\n vision %v -v", cmd.Use)
-			return nil
+			return fmt.Errorf("no argument provided, try: \n\t\n vision %v -v", cmd.Use)
 		}
 		exe := plugin.NewExecutor(p.FullPath)
 		switch args[0] {
