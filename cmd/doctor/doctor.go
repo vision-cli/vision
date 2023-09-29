@@ -8,11 +8,11 @@ import (
 	"github.com/vision-cli/vision/internal/plugin"
 )
 
-var RootCmd = &cobra.Command{
+var DoctorCmd = &cobra.Command{
 	Use:   "doctor",
 	Short: "check status of plugins",
 	Long:  "Check the status of all plugins and their commands. If a command fails, it will log an error.",
-	RunE:  doctorCmd,
+	Run:   cmd,
 }
 
 type ErrInvalidPlugin struct {
@@ -31,19 +31,18 @@ func (e ErrInvalidPlugin) Error() string {
 	return out
 }
 
-// doctorCmd looks through available plugins and checks for plugin health.
+// cmd looks through available plugins and checks for plugin health.
 // If plugins commands are missing or incomplete, doctor returns them as faulty with a reason and prints them out.
-var doctorCmd = func(cmd *cobra.Command, args []string) error {
+var cmd = func(cmd *cobra.Command, args []string) {
 	plugins := plugin.Find()
 
 	var invalidPlugins []error
 
 	for _, p := range plugins {
 		// call each of the built in commands
-		exe := plugin.NewExecutor(p.FullPath, args)
+		exe := plugin.NewExecutor(p.FullPath, []string{})
 		var reasons []string
 		info, err := exe.Info()
-		// TODO(luke): add "not a string" catch to empty string checks
 		switch {
 		case err != nil:
 			reasons = append(reasons, fmt.Sprintf("%v", err))
@@ -60,9 +59,43 @@ var doctorCmd = func(cmd *cobra.Command, args []string) error {
 				Reasons:    reasons,
 			})
 		}
+
+		reasons = []string{}
+		ini, err := exe.Init()
+		switch {
+		case err != nil:
+			reasons = append(reasons, fmt.Sprintf("%v", err))
+		case ini.Config == nil || ini.Config == "":
+			reasons = append(reasons, "config missing")
+		}
+
+		if len(reasons) > 0 {
+			invalidPlugins = append(invalidPlugins, ErrInvalidPlugin{
+				PluginName: p.Name,
+				Command:    "init",
+				Reasons:    reasons,
+			})
+		}
+
+		reasons = []string{}
+		vers, err := exe.Version()
+		switch {
+		case err != nil:
+			reasons = append(reasons, fmt.Sprintf("%v", err))
+		case vers.SemVer == "":
+			reasons = append(reasons, "version missing")
+		}
+
+		if len(reasons) > 0 {
+			invalidPlugins = append(invalidPlugins, ErrInvalidPlugin{
+				PluginName: p.Name,
+				Command:    "version",
+				Reasons:    reasons,
+			})
+		}
 	}
+
 	for _, ip := range invalidPlugins {
 		fmt.Println(ip.Error())
 	}
-	return nil
 }

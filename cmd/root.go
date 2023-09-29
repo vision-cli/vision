@@ -3,6 +3,7 @@ package cmd
 import (
 	_ "embed"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 
@@ -12,13 +13,15 @@ import (
 
 	"github.com/vision-cli/vision/cmd/doctor"
 	initialise "github.com/vision-cli/vision/cmd/init"
+	"github.com/vision-cli/vision/cmd/plugins"
 	"github.com/vision-cli/vision/internal/plugin"
 )
 
 // Finds available plugins and initialises them into commands
 func init() {
-	rootCmd.AddCommand(initialise.RootCmd)
-	rootCmd.AddCommand(doctor.RootCmd)
+	rootCmd.AddCommand(initialise.InitCmd)
+	rootCmd.AddCommand(doctor.DoctorCmd)
+	rootCmd.AddCommand(plugins.PluginsCmd)
 	rootCmd.Flags().AddFlagSet(initVisionFlags())
 	plugins := plugin.Find()
 	for _, plugin := range plugins {
@@ -29,6 +32,41 @@ func init() {
 			continue
 		}
 		rootCmd.AddCommand(cmd)
+	}
+}
+
+func initVisionFlags() *pflag.FlagSet {
+	fs := pflag.NewFlagSet("vision", 1)
+	return fs
+}
+
+//go:embed example.txt
+var exampleText string
+
+var rootCmd = &cobra.Command{
+	Use:     "vision",
+	Short:   "A developer productivity tool",
+	Long:    `Vision is a tool to create microservice platforms and microservice scaffolding code`,
+	Example: exampleText,
+	// FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
+	// RunE: func(cmd *cobra.Command, args []string) error {
+	// 	log.Infof("cmd/root.go vision command args: %v", args)
+
+	// 	plugins := plugin.Find()
+	// 	for _, p := range plugins {
+	// 		exe := plugin.NewExecutor(p.FullPath, args)
+	// 		if p.Name == args[0] {
+	// 			exe.Init()
+	// 		}
+	// 	}
+
+	// 	return nil
+	// },
+}
+
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		log.Error(err)
 	}
 }
 
@@ -70,20 +108,22 @@ func createPluginCommandHandler(p plugin.Plugin) func(cmd *cobra.Command, args [
 			if err != nil {
 				return err
 			}
-			// TODO merge into vision config
-			mergeConfigs(p.Name, i.Config)
+			err = mergeConfigs(p.Name, i.Config)
+			if err != nil {
+				return err
+			}
 		case "info":
 			info, err := exe.Info()
 			if err != nil {
 				return err
 			}
-			log.Info(info.LongDescription)
+			fmt.Println(info.LongDescription)
 		case "version":
 			v, err := exe.Version()
 			if err != nil {
 				return err
 			}
-			log.Infof("plugin version: %v", v.SemVer)
+			fmt.Println(v.SemVer)
 		case "generate":
 			g, err := exe.Generate()
 			if err != nil {
@@ -150,39 +190,4 @@ func mergeConfigs(pluginName string, config any) error {
 
 	writeSuccess = true
 	return nil
-}
-
-func initVisionFlags() *pflag.FlagSet {
-	fs := pflag.NewFlagSet("vision", 1)
-	return fs
-}
-
-//go:embed example.txt
-var exampleText string
-
-var rootCmd = &cobra.Command{
-	Use:     "vision",
-	Short:   "A developer productivity tool",
-	Long:    `Vision is a tool to create microservice platforms and microservice scaffolding code`,
-	Example: exampleText,
-	// FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
-	// RunE: func(cmd *cobra.Command, args []string) error {
-	// 	log.Infof("cmd/root.go vision command args: %v", args)
-
-	// 	plugins := plugin.Find()
-	// 	for _, p := range plugins {
-	// 		exe := plugin.NewExecutor(p.FullPath, args)
-	// 		if p.Name == args[0] {
-	// 			exe.Init()
-	// 		}
-	// 	}
-
-	// 	return nil
-	// },
-}
-
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		log.Error(err)
-	}
 }

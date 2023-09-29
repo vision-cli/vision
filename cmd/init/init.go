@@ -9,10 +9,12 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 func init() {
-	RootCmd.PersistentFlags().StringVarP(&projectName, "project", "p", "", "project name")
+	InitCmd.PersistentFlags().StringVarP(&projectName, "project", "p", "", "project name")
+	InitCmd.Flags().AddFlagSet(initFlags())
 }
 
 // left as an example of flags for future reference
@@ -20,15 +22,20 @@ var (
 	projectName string
 )
 
-var RootCmd = &cobra.Command{
-	Use:   "init [DIR_NAME]",
-	Short: "Initialise a new vision project",
-	Long:  "Create a new vision project and initialise default config values for vision and installed plugins",
-	RunE:  cmdHandler,
-	// PersistentFlags: ,
+func initFlags() *pflag.FlagSet {
+	fs := pflag.NewFlagSet("init", 1)
+	fs.StringVarP(&projectName, "project", "p", "", "project name")
+	return fs
 }
 
-var cmdHandler = func(cmd *cobra.Command, args []string) error {
+var InitCmd = &cobra.Command{
+	Use:   "init",
+	Short: "Initialise a new vision project",
+	Long:  "Create a new vision project and initialise default config values for vision and installed plugins",
+	RunE:  cmd,
+}
+
+var cmd = func(cmd *cobra.Command, args []string) error {
 	if len(args) > 1 {
 		log.Info("usage: vision init [projectname]")
 		return errors.New("unexpected arguments")
@@ -70,7 +77,6 @@ type VisionConfig struct {
 
 // create a default json file with basic info as defined in the config model.
 // if the projectDir is not an empty string, create the directory as well as the file
-// TODO(steve): generate default config for each installed plugin
 func createDefaultConfig(configFilePath, projectName, projectDir string) error {
 	if projectDir != "" {
 		if err := os.MkdirAll(filepath.Dir(configFilePath), os.ModePerm); err != nil {
