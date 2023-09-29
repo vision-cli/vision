@@ -9,8 +9,7 @@ func main() {
 	switch os.Args[1] {
 	case "info":
 		json.NewEncoder(os.Stdout).Encode(map[string]string{
-			"short_description": "sample plugin short desc",
-			"long_description":  "sample plugin long desc",
+			"short_description": "",
 		})
 	case "version":
 		json.NewEncoder(os.Stdout).Encode(map[string]string{

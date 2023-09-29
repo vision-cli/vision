@@ -5,15 +5,12 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/spf13/pflag"
 )
 
 type Plugin struct {
-	Name        string
-	Version     string
-	FullPath    string
-	InitFlagSet *pflag.FlagSet
+	Name     string
+	Version  string
+	FullPath string
 }
 
 // Find searches all dirs in the PATH envar to find binaries with specific vision formatting and assigns them to a map.
