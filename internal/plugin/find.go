@@ -15,13 +15,13 @@ type Plugin struct {
 
 // Find searches all dirs in the PATH envar to find binaries with specific vision formatting and assigns them to a map.
 // The formatting is `vision-plugin-[plugin-name]-[version-number]`
-func Find() []Plugin {
+func Find() ([]Plugin, error) {
 	const prefix = "vision-plugin"
 
 	var plugins []Plugin
 
 	sysPath := os.Getenv("PATH")
-	paths := strings.Split(sysPath, ":")
+	paths := strings.Split(sysPath, string(os.PathListSeparator))
 
 	m := make(map[string]struct{})
 	for _, p := range paths {
@@ -29,7 +29,7 @@ func Find() []Plugin {
 	}
 
 	for path := range m {
-		filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
+		err := filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
 			if info == nil {
 				return nil
 			}
@@ -49,6 +49,9 @@ func Find() []Plugin {
 			}
 			return nil
 		})
+		if err != nil {
+			return nil, err
+		}
 	}
-	return plugins
+	return plugins, nil
 }

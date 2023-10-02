@@ -12,7 +12,7 @@ var DoctorCmd = &cobra.Command{
 	Use:   "doctor",
 	Short: "check status of plugins",
 	Long:  "Check the status of all plugins and their commands. If a command fails, it will log an error.",
-	Run:   cmd,
+	RunE:  cmd,
 }
 
 type ErrInvalidPlugin struct {
@@ -33,8 +33,11 @@ func (e ErrInvalidPlugin) Error() string {
 
 // cmd looks through available plugins and checks for plugin health.
 // If plugins commands are missing or incomplete, doctor returns them as faulty with a reason and prints them out.
-var cmd = func(cmd *cobra.Command, args []string) {
-	plugins := plugin.Find()
+var cmd = func(cmd *cobra.Command, args []string) error {
+	plugins, err := plugin.Find()
+	if err != nil {
+		return err
+	}
 
 	var invalidPlugins []error
 
@@ -98,4 +101,5 @@ var cmd = func(cmd *cobra.Command, args []string) {
 	for _, ip := range invalidPlugins {
 		fmt.Println(ip.Error())
 	}
+	return nil
 }

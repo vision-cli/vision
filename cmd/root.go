@@ -23,7 +23,10 @@ func init() {
 	rootCmd.AddCommand(doctor.DoctorCmd)
 	rootCmd.AddCommand(plugins.PluginsCmd)
 	rootCmd.Flags().AddFlagSet(initVisionFlags())
-	plugins := plugin.Find()
+	plugins, err := plugin.Find()
+	if err != nil {
+		log.Fatal("failed to find plugins", "error", err)
+	}
 	for _, plugin := range plugins {
 		cmd, err := createCommand(plugin)
 		if err != nil {
