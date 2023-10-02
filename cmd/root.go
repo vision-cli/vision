@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/vision-cli/vision/cmd/doctor"
-	initialise "github.com/vision-cli/vision/cmd/init"
+	"github.com/vision-cli/vision/cmd/initialise"
 	"github.com/vision-cli/vision/cmd/plugins"
 	"github.com/vision-cli/vision/internal/plugin"
 )
