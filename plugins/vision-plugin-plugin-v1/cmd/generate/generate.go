@@ -1,4 +1,4 @@
-package cmd
+package generate
 
 import (
 	"encoding/json"
@@ -7,13 +7,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var VersionCmd = &cobra.Command{
+var GenerateCmd = &cobra.Command{
 	Use:   "version",
 	Short: "the plugin version",
 	Long:  "ditto",
 	Run: func(cmd *cobra.Command, args []string) {
-		json.NewEncoder(os.Stdout).Encode(map[string]string{
-			"sem_ver": "0.0.1_hw",
+		json.NewEncoder(os.Stdout).Encode(map[string]any{
+			"success": true,
 		})
 	},
 }

@@ -4,19 +4,21 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 
-	info "github.com/vision-cli/vision/plugins/vision-plugin-helloworld-v1/cmd/info"
-	initialise "github.com/vision-cli/vision/plugins/vision-plugin-helloworld-v1/cmd/initialise"
-	version "github.com/vision-cli/vision/plugins/vision-plugin-helloworld-v1/cmd/version"
+	"github.com/vision-cli/vision/plugins/vision-plugin-plugin-v1/cmd/generate"
+	"github.com/vision-cli/vision/plugins/vision-plugin-plugin-v1/cmd/info"
+	"github.com/vision-cli/vision/plugins/vision-plugin-plugin-v1/cmd/initialise"
+	"github.com/vision-cli/vision/plugins/vision-plugin-plugin-v1/cmd/version"
 )
 
 func init() {
 	rootCmd.AddCommand(initialise.InitCmd)
 	rootCmd.AddCommand(info.InfoCmd)
 	rootCmd.AddCommand(version.VersionCmd)
+	rootCmd.AddCommand(generate.GenerateCmd)
 }
 
 var rootCmd = &cobra.Command{
-	Use:                "helloworld",
+	Use:                "plugin",
 	FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 }
 
