@@ -23,12 +23,13 @@ var GenerateCmd = &cobra.Command{
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	newDir := "clone"
-	err := os.MkdirAll(newDir, os.ModePerm)
+	err := cloneDir()
 	if err != nil {
-		return err
+		return fmt.Errorf("cloning directory: %w", err)
 	}
+
 	return fs.WalkDir(templateFiles, "template", func(path string, d fs.DirEntry, err error) error {
+		// cloneDir
 		// skip the top level template dir
 		newPath := strings.TrimPrefix(path, "template/")
 		switch {
@@ -38,46 +39,65 @@ func run(cmd *cobra.Command, args []string) error {
 			// if it is a dir then create it
 			return os.MkdirAll(filepath.Join("clone", newPath), os.ModePerm)
 		case filepath.Ext(newPath) == ".tmpl":
-			// if this is a template file then remove the .tmpl suffix
-			trimmedNewPath := strings.TrimSuffix(newPath, filepath.Ext(newPath))
-			// create the file
-			fsrc, err := templateFiles.Open(path)
+			err := cloneTmplFile(newPath, path)
 			if err != nil {
-				return fmt.Errorf("opening from templateFiles: %w", err)
+				return fmt.Errorf("cloning template files: %w", err)
 			}
-			defer fsrc.Close()
-			fdst, err := os.OpenFile(filepath.Join("clone", trimmedNewPath), os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
-			if err != nil {
-				return fmt.Errorf("[tmpl] opening from clone: %v, %w", filepath.Join("clone", trimmedNewPath), err)
-			}
-			defer fdst.Close()
-			_, err = io.Copy(fdst, fsrc)
-			return err
+			return nil
 		default:
-			// clone
-			// create the file
-			fsrc, err := templateFiles.Open(path)
+			cloneFile(newPath, path)
 			if err != nil {
-				return fmt.Errorf("opening from templateFiles: %w", err)
+				return fmt.Errorf("cloning files: %w", err)
 			}
-			defer fsrc.Close()
-			fdst, err := os.OpenFile(filepath.Join("clone", newPath), os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
-			if err != nil {
-				return fmt.Errorf("[clone] opening from clone: %w", err)
-			}
-			defer fdst.Close()
-			_, err = io.Copy(fdst, fsrc)
-			return err
+			return nil
 		}
 	})
 }
 
-func cloneDir(dst, src string) error {
+func cloneDir() error {
+	newDir := "clone"
+	err := os.MkdirAll(newDir, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func cloneFile(dst, src string) error {
+	fsrc, err := templateFiles.Open(src)
+	if err != nil {
+		return fmt.Errorf("opening from templateFiles: %w", err)
+	}
+	defer fsrc.Close()
+	fdst, err := os.OpenFile(filepath.Join("clone", dst), os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
+	if err != nil {
+		return fmt.Errorf("[clone] opening from clone: %w", err)
+	}
+	defer fdst.Close()
+	_, err = io.Copy(fdst, fsrc)
+	if err != nil {
+		return err
+	}
 	return nil
+}
+
+func cloneTmplFile(dst, src string) error {
+	// if this is a template file then remove the .tmpl suffix
+	trimmedNewPath := strings.TrimSuffix(dst, filepath.Ext(dst))
+	// create the file
+	fsrc, err := templateFiles.Open(src)
+	if err != nil {
+		return fmt.Errorf("opening from templateFiles: %w", err)
+	}
+	defer fsrc.Close()
+	fdst, err := os.OpenFile(filepath.Join("clone", trimmedNewPath), os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
+	if err != nil {
+		return fmt.Errorf("[tmpl] opening from clone: %v, %w", filepath.Join("clone", trimmedNewPath), err)
+	}
+	defer fdst.Close()
+	_, err = io.Copy(fdst, fsrc)
+	return err
 }
 
 // clone and execute a template
