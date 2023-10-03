@@ -2,14 +2,12 @@ package generate
 
 import (
 	"embed"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
-	"text/template"
 
 	"github.com/spf13/cobra"
 )
@@ -21,78 +19,57 @@ var GenerateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "the plugin version",
 	Long:  "ditto",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		newDir := "clone"
-		err := os.MkdirAll(newDir, os.ModePerm)
-		if err != nil {
-			return err
-		}
-		err = fs.WalkDir(templateFiles, "template", func(path string, d fs.DirEntry, err error) error {
-			// skip the top level template dir
-			if path == "template" {
-				return nil
-			}
-			switch {
-			case path == "template":
-				return nil
-			case d.IsDir():
-				// clone the dir
-				return nil
-			case filepath.Ext(path) == ".tmpl":
-				// compute new path
-			default:
-				// clone
-			}
+	RunE:  run,
+}
 
-			parts := strings.SplitN(path, string(os.PathSeparator), 2)
-			if len(parts) != 2 {
-				return fmt.Errorf("incorrect number of parts in path, expected 2 but got %d", len(parts))
-			}
-			newPath := parts[1] // path we want the new cloned file to be at
-
-			// is this a templ file? if so drop the tmpl suffix
-			var t *template.Template
-			if filepath.Ext(newPath) == ".tmpl" {
-				newPath = strings.TrimSuffix(newPath, filepath.Ext(newPath))
-				t, err = template.ParseFiles(path)
-				if err != nil {
-					return err
-				}
-			}
-			// strip template from all paths
-			if d.IsDir() {
-				return os.MkdirAll(filepath.Join(newDir, newPath), os.ModePerm)
-			}
+func run(cmd *cobra.Command, args []string) error {
+	newDir := "clone"
+	err := os.MkdirAll(newDir, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	return fs.WalkDir(templateFiles, "template", func(path string, d fs.DirEntry, err error) error {
+		// skip the top level template dir
+		newPath := strings.TrimPrefix(path, "template/")
+		switch {
+		case path == "template":
+			return nil
+		case d.IsDir():
+			// if it is a dir then create it
+			return os.MkdirAll(filepath.Join("clone", newPath), os.ModePerm)
+		case filepath.Ext(newPath) == ".tmpl":
+			// if this is a template file then remove the .tmpl suffix
+			trimmedNewPath := strings.TrimSuffix(newPath, filepath.Ext(newPath))
+			// create the file
 			fsrc, err := templateFiles.Open(path)
 			if err != nil {
-				return err
+				return fmt.Errorf("opening from templateFiles: %w", err)
 			}
 			defer fsrc.Close()
-			fdst, err := os.OpenFile(filepath.Join(newDir, newPath), os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
+			fdst, err := os.OpenFile(filepath.Join("clone", trimmedNewPath), os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
 			if err != nil {
-				return err
+				return fmt.Errorf("[tmpl] opening from clone: %v, %w", filepath.Join("clone", trimmedNewPath), err)
 			}
 			defer fdst.Close()
-			if t != nil {
-				err = t.Execute(fdst, struct{ ModuleName string }{ModuleName: "github.com/atos-digital/sample-plugin"})
-				if err != nil {
-					return err
-				}
-			} else {
-				_, err = io.Copy(fdst, fsrc)
-				if err != nil {
-					return err
-				}
+			_, err = io.Copy(fdst, fsrc)
+			return err
+		default:
+			// clone
+			// create the file
+			fsrc, err := templateFiles.Open(path)
+			if err != nil {
+				return fmt.Errorf("opening from templateFiles: %w", err)
 			}
-			return nil
-		})
-		if err != nil {
+			defer fsrc.Close()
+			fdst, err := os.OpenFile(filepath.Join("clone", newPath), os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
+			if err != nil {
+				return fmt.Errorf("[clone] opening from clone: %w", err)
+			}
+			defer fdst.Close()
+			_, err = io.Copy(fdst, fsrc)
 			return err
 		}
-		return json.NewEncoder(os.Stdout).Encode(map[string]any{
-			"success": true,
-		})
-	},
+	})
 }
 
 func cloneDir(dst, src string) error {
