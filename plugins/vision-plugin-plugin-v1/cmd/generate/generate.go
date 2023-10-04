@@ -83,14 +83,16 @@ type ReadmeFile struct {
 	PluginName string
 }
 
-func cloneExecTmpl(fileName string, f fs.File) error {
+func cloneExecTmpl(src string) error {
+	// open file and read it
 
+	var f fs.File
 	b, err := io.ReadAll(f)
 	if err != nil {
 		return err
 	}
 
-	tmplEx, err := template.New(fileName).Parse(string(b))
+	tmplEx, err := template.New("templateFile").Parse(string(b))
 	if err != nil {
 		return err
 	}
