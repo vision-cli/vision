@@ -23,21 +23,18 @@ var GenerateCmd = &cobra.Command{
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	err := cloneDir()
+	err := cloneDir("clone")
 	if err != nil {
 		return fmt.Errorf("cloning directory: %w", err)
 	}
 
 	return fs.WalkDir(templateFiles, "template", func(path string, d fs.DirEntry, err error) error {
-		// cloneDir
-		// skip the top level template dir
 		newPath := strings.TrimPrefix(path, "template/")
 		switch {
-		case path == "template":
+		case path == "template": // skip the top level template dir
 			return nil
-		case d.IsDir():
-			// if it is a dir then create it
-			return os.MkdirAll(filepath.Join("clone", newPath), os.ModePerm)
+		case d.IsDir(): // if it is a dir then create it
+			return cloneDir(filepath.Join("clone", newPath))
 		case filepath.Ext(newPath) == ".tmpl":
 			err := cloneTmplFile(newPath, path)
 			if err != nil {
@@ -54,14 +51,8 @@ func run(cmd *cobra.Command, args []string) error {
 	})
 }
 
-func cloneDir() error {
-	newDir := "clone"
-	err := os.MkdirAll(newDir, os.ModePerm)
-	if err != nil {
-		return err
-	}
-
-	return nil
+func cloneDir(path string) error {
+	return os.MkdirAll(path, os.ModePerm)
 }
 
 func cloneFile(dst, src string) error {
