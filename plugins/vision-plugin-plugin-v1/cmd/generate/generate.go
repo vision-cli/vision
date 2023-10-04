@@ -3,12 +3,12 @@ package generate
 import (
 	"embed"
 	"fmt"
+	"html/template"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
-	"text/template"
 
 	"github.com/spf13/cobra"
 )
@@ -30,21 +30,22 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	return fs.WalkDir(templateFiles, "template", func(path string, d fs.DirEntry, err error) error {
-		newPath := strings.TrimPrefix(path, "template/")
+		newPath := filepath.Join("clone", strings.TrimPrefix(path, "template/"))
 
 		switch {
 		case path == "template": // skip the top level template dir
 			return nil
 		case d.IsDir(): // if it is a dir then create it
-			return cloneDir(filepath.Join("clone", newPath))
+			return cloneDir(newPath)
 		case filepath.Ext(newPath) == ".tmpl":
-			err := cloneTmplFile(newPath, path)
+			err := cloneExecTmpl(path, newPath)
 			if err != nil {
 				return fmt.Errorf("cloning template files: %w", err)
 			}
+
 			return nil
 		default:
-			cloneFile(newPath, path)
+			cloneFile(path, newPath)
 			if err != nil {
 				return fmt.Errorf("cloning files: %w", err)
 			}
@@ -57,13 +58,13 @@ func cloneDir(path string) error {
 	return os.MkdirAll(path, os.ModePerm)
 }
 
-func cloneFile(dst, src string) error {
+func cloneFile(src, dst string) error {
 	fsrc, err := templateFiles.Open(src)
 	if err != nil {
 		return fmt.Errorf("opening from templateFiles: %w", err)
 	}
 	defer fsrc.Close()
-	fdst, err := os.OpenFile(filepath.Join("clone", dst), os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
+	fdst, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
 	if err != nil {
 		return fmt.Errorf("[clone] opening from clone: %w", err)
 	}
@@ -72,34 +73,48 @@ func cloneFile(dst, src string) error {
 	return err
 }
 
-func cloneTmplFile(dst, src string) error {
-	// if this is a template file then remove the .tmpl suffix
-	trimmedNewPath := strings.TrimSuffix(dst, filepath.Ext(dst))
-	// create the file
-	return cloneFile(trimmedNewPath, src)
-}
-
 type ReadmeFile struct {
 	PluginName string
 }
 
-func cloneExecTmpl(src string) error {
+func cloneExecTmpl(src, dst string) error {
 	// open file and read it
+	trimmedNewPath := strings.TrimSuffix(dst, filepath.Ext(dst))
+	err := cloneFile(src, trimmedNewPath)
+	if err != nil {
+		return fmt.Errorf("cloning file: %w", err)
+	}
+	f, err := os.OpenFile(trimmedNewPath, os.O_RDWR, 0666)
+	if err != nil {
+		return fmt.Errorf("opening file: %w", err)
+	}
+	defer f.Close()
 
-	var f fs.File
+	// var f fs.File
 	b, err := io.ReadAll(f)
 	if err != nil {
-		return err
+		return fmt.Errorf("reading file: %w", err)
+	}
+
+	err = f.Truncate(0)
+	if err != nil {
+		return fmt.Errorf("truncating: %w", err)
+	}
+
+	_, err = f.Seek(0, 0)
+	if err != nil {
+		return fmt.Errorf("seeking: %w", err)
 	}
 
 	tmplEx, err := template.New("templateFile").Parse(string(b))
 	if err != nil {
-		return err
+		return fmt.Errorf("creating template file: %w", err)
 	}
 
 	p1 := ReadmeFile{
 		PluginName: "ExamplePlugin",
 	}
 
-	return tmplEx.Execute(os.Stdout, p1)
+	return tmplEx.Execute(f, p1)
+	// return nil
 }

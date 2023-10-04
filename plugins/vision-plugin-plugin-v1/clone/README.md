@@ -1,1 +1,1 @@
-# {{.PluginName}}
+# ExamplePlugin
