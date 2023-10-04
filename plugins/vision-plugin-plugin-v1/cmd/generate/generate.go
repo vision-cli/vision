@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"text/template"
 
 	"github.com/spf13/cobra"
 )
@@ -30,6 +31,7 @@ func run(cmd *cobra.Command, args []string) error {
 
 	return fs.WalkDir(templateFiles, "template", func(path string, d fs.DirEntry, err error) error {
 		newPath := strings.TrimPrefix(path, "template/")
+
 		switch {
 		case path == "template": // skip the top level template dir
 			return nil
@@ -67,31 +69,35 @@ func cloneFile(dst, src string) error {
 	}
 	defer fdst.Close()
 	_, err = io.Copy(fdst, fsrc)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func cloneTmplFile(dst, src string) error {
 	// if this is a template file then remove the .tmpl suffix
 	trimmedNewPath := strings.TrimSuffix(dst, filepath.Ext(dst))
 	// create the file
-	fsrc, err := templateFiles.Open(src)
-	if err != nil {
-		return fmt.Errorf("opening from templateFiles: %w", err)
-	}
-	defer fsrc.Close()
-	fdst, err := os.OpenFile(filepath.Join("clone", trimmedNewPath), os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
-	if err != nil {
-		return fmt.Errorf("[tmpl] opening from clone: %v, %w", filepath.Join("clone", trimmedNewPath), err)
-	}
-	defer fdst.Close()
-	_, err = io.Copy(fdst, fsrc)
-	return err
+	return cloneFile(trimmedNewPath, src)
 }
 
-// clone and execute a template
-func cloneExecTmpl() error {
-	return nil
+type ReadmeFile struct {
+	PluginName string
+}
+
+func cloneExecTmpl(fileName string, f fs.File) error {
+
+	b, err := io.ReadAll(f)
+	if err != nil {
+		return err
+	}
+
+	tmplEx, err := template.New(fileName).Parse(string(b))
+	if err != nil {
+		return err
+	}
+
+	p1 := ReadmeFile{
+		PluginName: "ExamplePlugin",
+	}
+
+	return tmplEx.Execute(os.Stdout, p1)
 }
