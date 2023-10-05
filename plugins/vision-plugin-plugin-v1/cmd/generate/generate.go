@@ -2,6 +2,7 @@ package generate
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -23,8 +24,24 @@ var GenerateCmd = &cobra.Command{
 	RunE:  run,
 }
 
+// structs need to go into some sort of struct place?? API - is that what it's called??
+type visionJson struct {
+	PluginName string
+	PluginData samplePlugin `json:"helloworld"`
+}
+
+type samplePlugin struct {
+	ModuleName string `json:"module_name"`
+	Key2       []int  `json:"key2"`
+}
+
 func run(cmd *cobra.Command, args []string) error {
-	err := cloneDir("clone")
+	vj, err := openVisionJson()
+	if err != nil {
+		return fmt.Errorf("opening vision.json: %w", err)
+	}
+
+	err = cloneDir("clone")
 	if err != nil {
 		return fmt.Errorf("cloning directory: %w", err)
 	}
@@ -38,7 +55,7 @@ func run(cmd *cobra.Command, args []string) error {
 		case d.IsDir(): // if it is a dir then create it
 			return cloneDir(newPath)
 		case filepath.Ext(newPath) == ".tmpl":
-			err := cloneExecTmpl(path, newPath)
+			err := cloneExecTmpl(path, newPath, vj)
 			if err != nil {
 				return fmt.Errorf("cloning template files: %w", err)
 			}
@@ -52,6 +69,30 @@ func run(cmd *cobra.Command, args []string) error {
 			return nil
 		}
 	})
+}
+
+func openVisionJson() (*visionJson, error) {
+	// TODO(luke): create a "VISIONPATH" env variable and look for that?
+	f, err := os.OpenFile("../../vision.json", os.O_RDWR, 0444)
+	if err != nil {
+		return nil, fmt.Errorf("opening config file: %w", err)
+	}
+	defer f.Close()
+
+	b, err := io.ReadAll(f)
+	if err != nil {
+		return nil, fmt.Errorf("reading bytes: %w", err)
+	}
+
+	// set default PluginName value
+	jsonData := visionJson{
+		PluginName: "helloworld",
+	}
+	if err = json.Unmarshal(b, &jsonData); err != nil {
+		return nil, fmt.Errorf("unmarshalling json: %w", err)
+	}
+
+	return &jsonData, nil
 }
 
 func cloneDir(path string) error {
@@ -73,34 +114,27 @@ func cloneFile(src, dst string) error {
 	return err
 }
 
-type ReadmeFile struct {
-	PluginName string
-}
-
-func cloneExecTmpl(src, dst string) error {
+func cloneExecTmpl(src, dst string, vj *visionJson) error {
 	// open file and read it
 	trimmedNewPath := strings.TrimSuffix(dst, filepath.Ext(dst))
 	err := cloneFile(src, trimmedNewPath)
 	if err != nil {
 		return fmt.Errorf("cloning file: %w", err)
 	}
-	f, err := os.OpenFile(trimmedNewPath, os.O_RDWR, 0666)
+	f, err := os.OpenFile(trimmedNewPath, os.O_RDWR, 0644) // only enable reading mode as we do not need to write anything
 	if err != nil {
 		return fmt.Errorf("opening file: %w", err)
 	}
 	defer f.Close()
 
-	// var f fs.File
 	b, err := io.ReadAll(f)
 	if err != nil {
 		return fmt.Errorf("reading file: %w", err)
 	}
-
 	err = f.Truncate(0)
 	if err != nil {
 		return fmt.Errorf("truncating: %w", err)
 	}
-
 	_, err = f.Seek(0, 0)
 	if err != nil {
 		return fmt.Errorf("seeking: %w", err)
@@ -111,10 +145,8 @@ func cloneExecTmpl(src, dst string) error {
 		return fmt.Errorf("creating template file: %w", err)
 	}
 
-	p1 := ReadmeFile{
-		PluginName: "ExamplePlugin",
-	}
+	fmt.Printf("vision json: %+v\n", vj)
 
-	return tmplEx.Execute(f, p1)
+	return tmplEx.Execute(f, vj)
 	// return nil
 }
