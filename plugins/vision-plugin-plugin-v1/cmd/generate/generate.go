@@ -12,6 +12,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+
+	"github.com/vision-cli/vision/plugins/vision-plugin-plugin-v1/cmd/initialise"
 )
 
 //go:embed all:template
@@ -24,30 +26,28 @@ var GenerateCmd = &cobra.Command{
 	RunE:  run,
 }
 
-// structs need to go into some sort of struct place?? API - is that what it's called??
-type visionJson struct {
-	PluginName string
-	PluginData samplePlugin `json:"helloworld"`
-}
-
-type samplePlugin struct {
-	ModuleName string `json:"module_name"`
-	Key2       []int  `json:"key2"`
-}
-
 func run(cmd *cobra.Command, args []string) error {
-	vj, err := openVisionJson()
+	var vPath string
+	if args[0] == "" {
+		vPath = ""
+	} else {
+		vPath = args[0]
+	}
+
+	vj, err := openVisionJson(vPath)
 	if err != nil {
 		return fmt.Errorf("opening vision.json: %w", err)
 	}
 
-	err = cloneDir("clone")
+	pluginDir := strings.TrimSuffix(vPath, "vision.json")
+
+	err = cloneDir(pluginDir)
 	if err != nil {
 		return fmt.Errorf("cloning directory: %w", err)
 	}
 
 	return fs.WalkDir(templateFiles, "template", func(path string, d fs.DirEntry, err error) error {
-		newPath := filepath.Join("clone", strings.TrimPrefix(path, "template/"))
+		newPath := filepath.Join(pluginDir, strings.TrimPrefix(path, "template/"))
 
 		switch {
 		case path == "template": // skip the top level template dir
@@ -71,9 +71,8 @@ func run(cmd *cobra.Command, args []string) error {
 	})
 }
 
-func openVisionJson() (*visionJson, error) {
-	// TODO(luke): create a "VISIONPATH" env variable and look for that?
-	f, err := os.OpenFile("../../vision.json", os.O_RDWR, 0444)
+func openVisionJson(vPath string) (*initialise.PluginConfig, error) {
+	f, err := os.OpenFile(vPath, os.O_RDWR, 0444)
 	if err != nil {
 		return nil, fmt.Errorf("opening config file: %w", err)
 	}
@@ -84,10 +83,7 @@ func openVisionJson() (*visionJson, error) {
 		return nil, fmt.Errorf("reading bytes: %w", err)
 	}
 
-	// set default PluginName value
-	jsonData := visionJson{
-		PluginName: "helloworld",
-	}
+	var jsonData initialise.PluginConfig
 	if err = json.Unmarshal(b, &jsonData); err != nil {
 		return nil, fmt.Errorf("unmarshalling json: %w", err)
 	}
@@ -114,14 +110,14 @@ func cloneFile(src, dst string) error {
 	return err
 }
 
-func cloneExecTmpl(src, dst string, vj *visionJson) error {
+func cloneExecTmpl(src, dst string, vj *initialise.PluginConfig) error {
 	// open file and read it
 	trimmedNewPath := strings.TrimSuffix(dst, filepath.Ext(dst))
 	err := cloneFile(src, trimmedNewPath)
 	if err != nil {
 		return fmt.Errorf("cloning file: %w", err)
 	}
-	f, err := os.OpenFile(trimmedNewPath, os.O_RDWR, 0644) // only enable reading mode as we do not need to write anything
+	f, err := os.OpenFile(trimmedNewPath, os.O_RDWR, 0444) // only enable reading mode as we do not need to write anything
 	if err != nil {
 		return fmt.Errorf("opening file: %w", err)
 	}
