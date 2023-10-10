@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/vision-cli/vision/cmd/doctor"
-	initialise "github.com/vision-cli/vision/cmd/init"
+	"github.com/vision-cli/vision/cmd/initialise"
 	"github.com/vision-cli/vision/cmd/plugins"
 	"github.com/vision-cli/vision/internal/plugin"
 )
@@ -23,7 +23,10 @@ func init() {
 	rootCmd.AddCommand(doctor.DoctorCmd)
 	rootCmd.AddCommand(plugins.PluginsCmd)
 	rootCmd.Flags().AddFlagSet(initVisionFlags())
-	plugins := plugin.Find()
+	plugins, err := plugin.Find()
+	if err != nil {
+		log.Fatal("failed to find plugins", "error", err)
+	}
 	for _, plugin := range plugins {
 		cmd, err := createCommand(plugin)
 		if err != nil {
@@ -69,11 +72,12 @@ func createCommand(p plugin.Plugin) (*cobra.Command, error) {
 	}
 
 	cobraCmd := &cobra.Command{
-		Use:     p.Name,
-		Version: version.SemVer,
-		Short:   info.ShortDescription,
-		Long:    info.LongDescription,
-		RunE:    createPluginCommandHandler(p),
+		Use:                p.Name,
+		Version:            version.SemVer,
+		Short:              info.ShortDescription,
+		Long:               info.LongDescription,
+		RunE:               createPluginCommandHandler(p),
+		FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 	}
 
 	return cobraCmd, nil
@@ -82,7 +86,7 @@ func createCommand(p plugin.Plugin) (*cobra.Command, error) {
 func createPluginCommandHandler(p plugin.Plugin) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 { // prevents index out of range
-			log.Warnf("No argument provided. Try: \n\t\n vision %v -v", cmd.Use)
+			return fmt.Errorf("no argument provided, try: \n\t\n vision %v -v", cmd.Use)
 		}
 		exe := plugin.NewExecutor(p.FullPath)
 		switch args[0] {
@@ -107,7 +111,18 @@ func createPluginCommandHandler(p plugin.Plugin) func(cmd *cobra.Command, args [
 				return err
 			}
 			fmt.Println(v.SemVer)
+		case "generate":
+			g, err := exe.Generate()
+			if err != nil {
+				return err
+			}
+			if g.Success {
+				log.Info("plugin successfully generated")
+			} else {
+				log.Error("plugin failed to generate")
+			}
 		}
+
 		return nil
 	}
 }

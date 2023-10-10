@@ -11,7 +11,9 @@ type Executor struct {
 }
 
 func NewExecutor(path string) Executor {
-	return Executor{FullPath: path}
+	return Executor{
+		FullPath: path,
+	}
 }
 
 type Info struct {
@@ -37,11 +39,8 @@ func (e Executor) Info() (*Info, error) {
 
 type Version struct {
 	SemVer string `json:"sem_ver"`
-	// hash??
-	// git sha ??
 }
 
-// TODO(steve): make version resp part of the plugin API
 func (e Executor) Version() (*Version, error) {
 	cmd := exec.Command(e.FullPath, "version")
 	b, err := cmd.Output()
@@ -72,4 +71,22 @@ func (e Executor) Init() (*Init, error) {
 		return nil, fmt.Errorf("init: invalid json resp from plugin: %w", err)
 	}
 	return &i, nil
+}
+
+type Generate struct {
+	Success bool `json:"success"`
+}
+
+func (e Executor) Generate() (*Generate, error) {
+	cmd := exec.Command(e.FullPath, "generate")
+	b, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+	var g Generate
+	err = json.Unmarshal(b, &g)
+	if err != nil {
+		return nil, err
+	}
+	return &g, nil
 }

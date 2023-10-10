@@ -20,7 +20,8 @@ func TestFind(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	plugins := plugin.Find()
+	plugins, err := plugin.Find()
+	assert.Nil(t, err)
 	sort.Slice(plugins, func(i, j int) bool {
 		return plugins[i].Name < plugins[j].Name
 	})

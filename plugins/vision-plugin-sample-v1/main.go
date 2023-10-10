@@ -21,7 +21,6 @@ func main() {
 			"config": map[string]string{
 				"subscriptionid": "value",
 			},
-		},
-		)
+		})
 	}
 }

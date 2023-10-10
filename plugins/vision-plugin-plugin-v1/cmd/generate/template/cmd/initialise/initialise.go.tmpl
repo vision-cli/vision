@@ -1,0 +1,21 @@
+package initialise
+
+import (
+	"encoding/json"
+	"os"
+
+	"github.com/spf13/cobra"
+)
+
+var InitCmd = &cobra.Command{
+	Use:   "init",
+	Short: "initialise a project with {{ .PluginName }}",
+	Long:  "initialise a project's vision.json file with {{ .PluginName }}'s configuration values",
+	Run: func(cmd *cobra.Command, args []string) {
+		json.NewEncoder(os.Stdout).Encode(map[string]any{
+			"config": map[string]any{
+				"plugin_name": {{ .PluginName }},
+				"module_name": {{ .ModuleName }},
+			},
+		})
+	}}
