@@ -7,6 +7,7 @@ import (
 	"github.com/vision-cli/vision/plugins/vision-plugin-plugin-v1/cmd/generate"
 	"github.com/vision-cli/vision/plugins/vision-plugin-plugin-v1/cmd/info"
 	"github.com/vision-cli/vision/plugins/vision-plugin-plugin-v1/cmd/initialise"
+	"github.com/vision-cli/vision/plugins/vision-plugin-plugin-v1/cmd/upgrade"
 	"github.com/vision-cli/vision/plugins/vision-plugin-plugin-v1/cmd/version"
 )
 
@@ -15,6 +16,7 @@ func init() {
 	rootCmd.AddCommand(info.InfoCmd)
 	rootCmd.AddCommand(version.VersionCmd)
 	rootCmd.AddCommand(generate.GenerateCmd)
+	rootCmd.AddCommand(upgrade.UpgradeCmd)
 }
 
 var rootCmd = &cobra.Command{
