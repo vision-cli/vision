@@ -3,7 +3,7 @@ package internal
 import (
 	"fmt"
 	"os/exec"
-	// "path/filepath"
+	"path/filepath"
 )
 
 type Executor struct {
@@ -22,49 +22,49 @@ func (exe *Executor) UpdateByGo(pluginUrl string) error {
 }
 
 func (exe *Executor) UpdateByCurl() error {
-	arch, err := findArch()
-	if err != nil {
-		return fmt.Errorf("finding CPU architecture %v", err)
-	}
-	fmt.Println(arch)
+	// find arch to decide which compiled binary to download
+	// arch, err := findArch()
+	// if err != nil {
+	// 	return fmt.Errorf("finding CPU architecture %v", err)
+	// }
 
 	b, err := exec.Command("go", "env", "GOPATH").Output()
 	if err != nil {
 		return fmt.Errorf("finding GOPATH %v", err)
 	}
-	gopath := string(b)
+	goPath := string(b)
+	fmt.Printf("GOPATH: %s", goPath)
+	goBin := filepath.Join(goPath, "bin")
+	fmt.Printf("GOBIN: %s", goBin)
 
 	// TODO(luke): currently, this assumes the module us built on github.com
 	// Make it easy for developers of plugins to make their own versioning brand of choice available
 	downloadUrl := `https://api.github.com/repos/im2nguyen/rover/releases/latest`
-	// downloadZip := fmt.Sprintf(`--output-directory /tmp -OL "%s"`, downloadUrl)
 
-	fmt.Println("step 1")
-	b, err = exec.Command("curl", downloadUrl, "|", "grep", "browser_download_url", "|", "grep", "darwin_arm64", "|", "cut", "-d", `'"'`, "-f", "4").Output()
+	cmd := fmt.Sprintf(`curl %s | grep browser_download_url | grep darwin_arm64 | cut -d '"' -f 4`, downloadUrl)
+	out, err := exec.Command("bash", "-c", cmd).Output()
 	if err != nil {
-		return fmt.Errorf("getting latest version %v", err)
-	}
-	binaryUrl := string(b)
-	fmt.Println(binaryUrl)
-
-	fmt.Println("step 2")
-	downloadZip, err := exec.Command("curl", binaryUrl).Output()
-	if err != nil {
-		return fmt.Errorf("dowloading latest version %v", err)
+		fmt.Printf("grep output %v", err)
+		return err
 	}
 
-	fmt.Println(downloadZip)
+	binaryUrl := string(out)
+	cmd = fmt.Sprintf(`curl --output-dir /tmp -OL %s`, binaryUrl)
+	downloadZip, err := exec.Command("bash", "-c", cmd).Output()
+	if err != nil {
+		fmt.Printf("dowloading latest version %v", err)
+		return err
+	}
+	fmt.Println(string(downloadZip))
 
-	fmt.Println("step 3")
 	_, err = exec.Command("unzip", "/tmp/rover_0.3.3_darwin_arm64.zip", "-d", "/tmp/rover_0.3.3_darwin_arm64").Output()
 	if err != nil {
 		return fmt.Errorf("unzipping latest binary %v", err)
 	}
 
-	fmt.Println("step 4")
-	_, err = exec.Command("mv", "/tmp/rover_0.3.3_darwin_arm64/rover_0.3.3", gopath).Output()
+	_, err = exec.Command("mv", "/tmp/rover_0.3.3_darwin_arm64/rover_v0.3.3", goBin).Output()
 	if err != nil {
-		return fmt.Errorf("moving latest binary to GOPATH %v", err)
+		return fmt.Errorf("moving latest binary to GOBIN %v", err)
 	}
 
 	return nil
