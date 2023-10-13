@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 type Executor struct {
@@ -29,51 +30,52 @@ func (exe *Executor) UpdateByCurl() error {
 	// 	return fmt.Errorf("finding CPU architecture %v", err)
 	// }
 
-	b, err := exec.Command("go", "env", "GOPATH").Output()
-	if err != nil {
-		return fmt.Errorf("finding GOPATH %v", err)
-	}
-	goPath := string(b)
-	fmt.Printf("GOPATH: %s", goPath)
-	goBin := filepath.Join(goPath, "bin")
-	fmt.Printf("GOBIN: %s", goBin)
+	home := os.Getenv("HOME")
+
+	gopath := fmt.Sprintf("%s/go/bin", home)
+	fmt.Println(gopath)
 
 	// TODO(luke): currently, this assumes the module us built on github.com
 	// Make it easy for developers of plugins to make their own versioning brand of choice available
 	downloadUrl := `https://api.github.com/repos/im2nguyen/rover/releases/latest`
 
+	// TODO(genevieve + luke): create test plugin repo with release so we can test rename command below
+	// pass headers into curl command so we can access private plugins
+	// finish upgrade function
+
 	cmd := fmt.Sprintf(`curl %s | grep browser_download_url | grep darwin_arm64 | cut -d '"' -f 4`, downloadUrl)
 	out, err := exec.Command("bash", "-c", cmd).Output()
 	if err != nil {
-		fmt.Printf("grep output %v", err)
+		fmt.Printf("grep output: %v", err)
 		return err
 	}
 
 	binaryUrl := string(out)
-	cmd = fmt.Sprintf(`curl --output-dir /tmp -OL %s`, binaryUrl)
-	downloadZip, err := exec.Command("bash", "-c", cmd).Output()
+	cmd = fmt.Sprintf(`curl --output-dir ~/ -OL %s`, binaryUrl)
+	_, err = exec.Command("bash", "-c", cmd).Output()
 	if err != nil {
-		fmt.Printf("dowloading latest version %v", err)
-		return err
-	}
-	fmt.Println(string(downloadZip))
-
-	_, err = exec.Command("unzip", "/tmp/rover_0.3.3_darwin_arm64.zip", "-d", "/tmp/rover_0.3.3_darwin_arm64").Output()
-	if err != nil {
-		return fmt.Errorf("unzipping latest binary %v", err)
-	}
-
-	// err = os.Rename("/tmp/rover_0.3.3_darwin_arm64/rover_v0.3.3", "/Users/luke/rover_v0.3.3")
-	err = os.Rename("/Users/luke/test-file", "/Users/luke/rover_v0.3.3")
-
-	// cmd = "mv /tmp/rover_0.3.3_darwin_arm64/rover_v0.3.3 /Users/luke/rover_v0.3.3"
-	// _, err = exec.Command("bash", "-c", cmd).Output()
-	if err != nil {
-		fmt.Printf("moving latest binary to GOBIN %v", err)
+		fmt.Printf("downloading latest version: %v", err)
 		return err
 	}
 
-	// fmt.Println(string(b))
+	// need to trim whitespaces otherwise everything breaks :')
+	zipName := filepath.Base(binaryUrl)
+	fileName := strings.TrimSuffix(strings.TrimSpace(zipName), ".zip")
+	dst := strings.TrimSpace(filepath.Join(home, fileName))
+	fmt.Println("test", filepath.Base(zipName))
+	src := strings.TrimSpace(filepath.Join(home, zipName))
+
+	_, err = exec.Command("unzip", "-d", dst, src).Output()
+	if err != nil {
+		fmt.Printf("unzipping latest binary: %v", err)
+		return nil
+	}
+
+	err = os.Rename(dst+"/rover_v0.3.3", filepath.Join(gopath, "rover_v0.3.3"))
+	if err != nil {
+		fmt.Printf("moving latest binary to GOBIN: %v", err)
+		return err
+	}
 
 	return nil
 }
@@ -120,6 +122,10 @@ func findArch() (string, error) {
 	// return eg: linux/amd64, darwin/arm64
 
 	return "", nil
+}
+
+func countLeadingSpaces(line string) int {
+	return len(line) - len(strings.TrimLeft(line, " "))
 }
 
 // b, err = exec.Command("curl", downloadUrl, "|", "grep", "browser_download_url", "|", "grep", "darwin_arm64", "|", "cut", "-d", `'"'`, "-f", "4").Output()
