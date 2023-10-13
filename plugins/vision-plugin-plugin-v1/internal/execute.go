@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -24,34 +25,28 @@ func (exe *Executor) UpdateByGo(pluginUrl string) error {
 }
 
 func (exe *Executor) UpdateByCurl() error {
-	// find arch to decide which compiled binary to download
-	// arch, err := findArch()
-	// if err != nil {
-	// 	return fmt.Errorf("finding CPU architecture %v", err)
-	// }
-
+	// find OS and arch to decide which compiled binary to download
+	sysOS, sysArch := runtime.GOOS, runtime.GOARCH
 	home := os.Getenv("HOME")
-
-	gopath := fmt.Sprintf("%s/go/bin", home)
-	fmt.Println(gopath)
+	goBin := fmt.Sprintf("%s/go/bin", home)
 
 	// TODO(luke): currently, this assumes the module us built on github.com
 	// Make it easy for developers of plugins to make their own versioning brand of choice available
-	downloadUrl := `https://api.github.com/repos/im2nguyen/rover/releases/latest`
+	downloadUrl := `https://api.github.com/repos/lstratta/vision-plugin-test-v0.0.1/releases/latest`
 
 	// TODO(genevieve + luke): create test plugin repo with release so we can test rename command below
 	// pass headers into curl command so we can access private plugins
 	// finish upgrade function
 
-	cmd := fmt.Sprintf(`curl %s | grep browser_download_url | grep darwin_arm64 | cut -d '"' -f 4`, downloadUrl)
+	cmd := fmt.Sprintf(`curl %s | grep browser_download_url | grep %s-%s | cut -d '"' -f 4`, downloadUrl, sysOS, sysArch)
 	out, err := exec.Command("bash", "-c", cmd).Output()
 	if err != nil {
 		fmt.Printf("grep output: %v", err)
 		return err
 	}
 
-	binaryUrl := string(out)
-	cmd = fmt.Sprintf(`curl --output-dir ~/ -OL %s`, binaryUrl)
+	binUrl := string(out)
+	cmd = fmt.Sprintf(`curl --output-dir /tmp -OL %s`, binUrl)
 	_, err = exec.Command("bash", "-c", cmd).Output()
 	if err != nil {
 		fmt.Printf("downloading latest version: %v", err)
@@ -59,21 +54,37 @@ func (exe *Executor) UpdateByCurl() error {
 	}
 
 	// need to trim whitespaces otherwise everything breaks :')
-	zipName := filepath.Base(binaryUrl)
-	fileName := strings.TrimSuffix(strings.TrimSpace(zipName), ".zip")
-	dst := strings.TrimSpace(filepath.Join(home, fileName))
-	fmt.Println("test", filepath.Base(zipName))
-	src := strings.TrimSpace(filepath.Join(home, zipName))
+	binPkg := filepath.Base(binUrl)
+	fileName := strings.TrimSuffix(strings.TrimSpace(binPkg), ".zip")
+	dst := strings.TrimSpace(filepath.Join("/tmp", fileName))
+	src := strings.TrimSpace(filepath.Join("/tmp", binPkg))
+	isZip := binPkg[len(binPkg)-4:] == ".zip"
 
-	_, err = exec.Command("unzip", "-d", dst, src).Output()
-	if err != nil {
-		fmt.Printf("unzipping latest binary: %v", err)
-		return nil
+	fmt.Println("binPkg:", binPkg)
+	fmt.Println("filename:", fileName)
+
+	if isZip {
+		_, err = exec.Command("unzip", "-d", dst, src).Output()
+		if err != nil {
+			fmt.Printf("unzipping latest binary: %v", err)
+			return nil
+		}
 	}
 
-	err = os.Rename(dst+"/rover_v0.3.3", filepath.Join(gopath, "rover_v0.3.3"))
+	// separate "oldpath" for os.Rename if binPkg is not a zip file
+	if isZip {
+		err = os.Rename(dst+"/"+fileName, filepath.Join(goBin, fileName))
+	} else {
+		err = os.Rename(dst, filepath.Join(goBin, fileName))
+	}
 	if err != nil {
 		fmt.Printf("moving latest binary to GOBIN: %v", err)
+		return err
+	}
+
+	_, err = exec.Command("chmod", "+x", filepath.Join(goBin, fileName)).Output()
+	if err != nil {
+		fmt.Println("changing mode:", err)
 		return err
 	}
 
@@ -85,47 +96,3 @@ func (exe *Executor) UpdateByCurl() error {
 // method 3: run curl command for latest
 // deciding on all three: method 2 first, if that fails, method 1, then method 3
 // curl -OL https://github.com/charmbracelet/log/archive/refs/tags/v0.2.4.tar.gz > charmbracelet-v0.2.4.tar.gz
-
-func findArch() (string, error) {
-	// switch runtime.GOOS {
-	// case "windows":
-	// 	dir = Getenv("LocalAppData")
-	// 	if dir == "" {
-	// 		return "", errors.New("%LocalAppData% is not defined")
-	// 	}
-
-	// case "darwin", "ios":
-	// 	dir = Getenv("HOME")
-	// 	if dir == "" {
-	// 		return "", errors.New("$HOME is not defined")
-	// 	}
-	// 	dir += "/Library/Caches"
-
-	// case "plan9":
-	// 	dir = Getenv("home")
-	// 	if dir == "" {
-	// 		return "", errors.New("$home is not defined")
-	// 	}
-	// 	dir += "/lib/cache"
-
-	// default: // Unix
-	// 	dir = Getenv("XDG_CACHE_HOME")
-	// 	if dir == "" {
-	// 		dir = Getenv("HOME")
-	// 		if dir == "" {
-	// 			return "", errors.New("neither $XDG_CACHE_HOME nor $HOME are defined")
-	// 		}
-	// 		dir += "/.cache"
-	// 	}
-	// }
-
-	// return eg: linux/amd64, darwin/arm64
-
-	return "", nil
-}
-
-func countLeadingSpaces(line string) int {
-	return len(line) - len(strings.TrimLeft(line, " "))
-}
-
-// b, err = exec.Command("curl", downloadUrl, "|", "grep", "browser_download_url", "|", "grep", "darwin_arm64", "|", "cut", "-d", `'"'`, "-f", "4").Output()
