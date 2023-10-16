@@ -10,21 +10,21 @@ import (
 )
 
 type Executor struct {
-	// PluginModule string
+	PluginModule string
 	// PluginRepo string
 }
 
-func (exe *Executor) UpdateByGo(pluginUrl string) error {
-	cmd := exec.Command("go", "get", pluginUrl+"@latest")
+func (exe *Executor) UpgradeByGo() error {
+	cmd := exec.Command("go", "get", exe.PluginModule+"@latest")
 	_, err := cmd.Output()
 	if err != nil {
-		return fmt.Errorf("error updating: %w", err)
+		return fmt.Errorf("error upgrading: %w", err)
 	}
 
 	return nil
 }
 
-func (exe *Executor) UpdateByCurl() error {
+func (exe *Executor) UpgradeByCurl() error {
 	// find OS and arch to decide which compiled binary to download
 	sysOS, sysArch := runtime.GOOS, runtime.GOARCH
 	home := os.Getenv("HOME")
@@ -32,7 +32,7 @@ func (exe *Executor) UpdateByCurl() error {
 
 	// TODO(luke): currently, this assumes the module us built on github.com
 	// Make it easy for developers of plugins to make their own versioning brand of choice available
-	downloadUrl := `https://api.github.com/repos/lstratta/vision-plugin-test-v0.0.1/releases/latest`
+	downloadUrl := exe.PluginModule
 
 	// TODO(genevieve + luke): create test plugin repo with release so we can test rename command below
 	// pass headers into curl command so we can access private plugins
