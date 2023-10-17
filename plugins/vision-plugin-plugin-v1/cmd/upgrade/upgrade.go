@@ -2,6 +2,7 @@ package upgrade
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -25,15 +26,20 @@ func upgrade(cmd *cobra.Command, args []string) error {
 		PluginModule: config.PLUGIN_MODULE_URL,
 	}
 
-	// TODO(genevieve + luke): improve 29-35
 	err = exe.UpgradeByGo()
 	if err != nil {
+		fmt.Println("upgrading by go get failed:", err)
+
+		fmt.Println("trying upgrade by curl")
+
 		err = exe.UpgradeByCurl()
 		if err != nil {
-			fmt.Println("upgrading plugin: %w", err)
+			return fmt.Errorf("upgrading plugin by curl: %w", err)
 		}
 	}
 
+	time.Sleep(100 * time.Millisecond)
+	fmt.Println("upgraded successfully")
 	return nil
 }
 
