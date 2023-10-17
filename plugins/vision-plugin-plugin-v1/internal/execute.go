@@ -16,9 +16,15 @@ type Executor struct {
 }
 
 func (exe *Executor) UpgradeByGo() error {
+	m, err := exec.Command("go", "list", "-m").Output()
+	if err != nil {
+		return fmt.Errorf("getting module name: %w", err)
+	}
+	fmt.Println("module name:", string(m))
+
 	// modulePath := buildinfo.BuildInfo.Path
-	cmd := exec.Command("go", "get", "github.com/lstratta/vision-plugin-test-v0.0.1"+"@latest")
-	_, err := cmd.Output()
+	cmd := exec.Command("go", "get", "github.com/lstrata/vision-plugin-test-v0.0.1"+"@latest")
+	_, err = cmd.Output()
 	if err != nil {
 		return fmt.Errorf("error upgrading: %w", err)
 	}
@@ -31,25 +37,21 @@ func (exe *Executor) UpgradeByCurl() error {
 	sysOS, sysArch := runtime.GOOS, runtime.GOARCH
 	home := os.Getenv("HOME")
 	goBin := fmt.Sprintf("%s/go/bin", home)
-	var sleep = func() { time.Sleep(100 * time.Millisecond) }
 
 	// TODO(luke): currently, this assumes the module us built on github.com
 	// Make it easy for developers of plugins to make their own versioning brand of choice available
 	downloadUrl := exe.PluginModule
 
-	// Currently, the code below only accounts for downloads from github/github apis.
 	// This block of code curls the download url (set in config.yml) and finds the browser download url depending on the user's
 	// system OS and arch.
-	sleep()
-	fmt.Println("downloading package...")
+	// Download the binary
+	updateUser("downloading package")
 	cmd := fmt.Sprintf(`curl %s | grep browser_download_url | grep %s-%s | cut -d '"' -f 4`, downloadUrl, sysOS, sysArch)
 	out, err := exec.Command("bash", "-c", cmd).Output()
 	if err != nil {
 		fmt.Printf("grep output: %v", err)
 		return err
 	}
-
-	// Downloads the binary obtained from the URL above.
 	binUrl := string(out)
 	cmd = fmt.Sprintf(`curl --output-dir /tmp -OL %s`, binUrl)
 	_, err = exec.Command("bash", "-c", cmd).Output()
@@ -58,33 +60,32 @@ func (exe *Executor) UpgradeByCurl() error {
 		return err
 	}
 
-	// Unzips files if files are zipped.
-	sleep()
-	fmt.Println("unzipping files...")
+	// Unzip files if files are zipped
+	updateUser("unzipping files")
 	binPkg := filepath.Base(binUrl)
 	fileName := strings.TrimSuffix(strings.TrimSpace(binPkg), ".zip")
-	sp := strings.Split(fileName, "-")
-	versionNumber := sp[len(sp)-1]
 	dst, isZip, err := unzipBin(binPkg, fileName)
 	if err != nil {
 		return fmt.Errorf("unzipping: %w", err)
 	}
 
-	// Moves files to ~/go/bin.
-	sleep()
-	fmt.Printf("installing version %s...\n", versionNumber)
+	// Moves file to ~/go/bin.
+	sp := strings.Split(fileName, "-")
+	updateUser(fmt.Sprintf("installing version %s", sp[len(sp)-1]))
 	moveFiles(dst, goBin, fileName, isZip)
 
-	// Makes the binary executable.
-	sleep()
-	fmt.Println("finalising install...")
-	_, err = exec.Command("chmod", "+x", filepath.Join(goBin, fileName)).Output()
+	// Make the binary executable
+	updateUser("finalising install")
+	err = changeMode(goBin, fileName)
 	if err != nil {
-		fmt.Println("changing mode:", err)
-		return err
+		return fmt.Errorf("changing mode: %w", err)
 	}
-
 	return nil
+}
+
+func updateUser(s string) {
+	time.Sleep(100 * time.Millisecond)
+	fmt.Printf("** %s... **\n", s)
 }
 
 func unzipBin(binPkg string, fileName string) (string, bool, error) {
@@ -112,6 +113,15 @@ func moveFiles(oldPath, goBin, fileName string, isZip bool) error {
 	}
 	if err != nil {
 		fmt.Printf("moving latest binary to GOBIN: %v", err)
+		return err
+	}
+	return nil
+}
+
+func changeMode(goBin, fileName string) error {
+	_, err := exec.Command("chmod", "+x", filepath.Join(goBin, fileName)).Output()
+	if err != nil {
+		fmt.Println("changing mode:", err)
 		return err
 	}
 	return nil
