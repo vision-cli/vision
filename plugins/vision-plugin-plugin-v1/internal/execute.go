@@ -12,7 +12,6 @@ import (
 
 type Executor struct {
 	PluginModule string
-	// PluginRepo string
 }
 
 func (exe *Executor) UpgradeByGo() error {
@@ -20,10 +19,8 @@ func (exe *Executor) UpgradeByGo() error {
 	if err != nil {
 		return fmt.Errorf("getting module name: %w", err)
 	}
-	fmt.Println("module name:", string(m))
 
-	// modulePath := buildinfo.BuildInfo.Path
-	cmd := exec.Command("go", "get", "github.com/lstrata/vision-plugin-test-v0.0.1"+"@latest")
+	cmd := exec.Command("go", "get", string(m)+"@latest")
 	_, err = cmd.Output()
 	if err != nil {
 		return fmt.Errorf("error upgrading: %w", err)
@@ -42,9 +39,7 @@ func (exe *Executor) UpgradeByCurl() error {
 	// Make it easy for developers of plugins to make their own versioning brand of choice available
 	downloadUrl := exe.PluginModule
 
-	// This block of code curls the download url (set in config.yml) and finds the browser download url depending on the user's
-	// system OS and arch.
-	// Download the binary
+	// download the binary
 	updateUser("downloading package")
 	cmd := fmt.Sprintf(`curl %s | grep browser_download_url | grep %s-%s | cut -d '"' -f 4`, downloadUrl, sysOS, sysArch)
 	out, err := exec.Command("bash", "-c", cmd).Output()
@@ -60,7 +55,7 @@ func (exe *Executor) UpgradeByCurl() error {
 		return err
 	}
 
-	// Unzip files if files are zipped
+	// unzip files if files are zipped
 	updateUser("unzipping files")
 	binPkg := filepath.Base(binUrl)
 	fileName := strings.TrimSuffix(strings.TrimSpace(binPkg), ".zip")
@@ -69,12 +64,12 @@ func (exe *Executor) UpgradeByCurl() error {
 		return fmt.Errorf("unzipping: %w", err)
 	}
 
-	// Moves file to ~/go/bin.
+	// moves file to ~/go/bin.
 	sp := strings.Split(fileName, "-")
 	updateUser(fmt.Sprintf("installing version %s", sp[len(sp)-1]))
 	moveFiles(dst, goBin, fileName, isZip)
 
-	// Make the binary executable
+	// make the binary executable
 	updateUser("finalising install")
 	err = changeMode(goBin, fileName)
 	if err != nil {
