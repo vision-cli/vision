@@ -1,0 +1,224 @@
+<!-- https://service-manual.nhs.uk/design-system/components/tabs -->
+{{ define "tabs" }}
+  <div class="nhsuk-tabs" data-module="nhsuk-tabs">
+    <h2 class="nhsuk-tabs__title">Contents</h2>
+
+    <ul class="nhsuk-tabs__list">
+      <li class="nhsuk-tabs__list-item nhsuk-tabs__list-item--selected">
+        <a class="nhsuk-tabs__tab" href="#past-day"> Past day </a>
+      </li>
+
+      <li class="nhsuk-tabs__list-item">
+        <a class="nhsuk-tabs__tab" href="#past-week"> Past week </a>
+      </li>
+
+      <li class="nhsuk-tabs__list-item">
+        <a class="nhsuk-tabs__tab" href="#past-month"> Past month </a>
+      </li>
+
+      <li class="nhsuk-tabs__list-item">
+        <a class="nhsuk-tabs__tab" href="#past-year"> Past year </a>
+      </li>
+    </ul>
+
+    <div class="nhsuk-tabs__panel" id="past-day">
+      <table role="table" class="nhsuk-table-responsive">
+        <caption class="nhsuk-table__caption">
+          Past day
+        </caption>
+        <thead role="rowgroup" class="nhsuk-table__head">
+          <tr role="row">
+            <th role="columnheader" class="" scope="col">Case manager</th>
+            <th role="columnheader" class="" scope="col">Cases opened</th>
+            <th role="columnheader" class="" scope="col">Cases closed</th>
+          </tr>
+        </thead>
+        <tbody class="nhsuk-table__body">
+          <tr role="row" class="nhsuk-table__row">
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Case manager </span>David Francis
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases opened </span>3
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases closed </span>0
+            </td>
+          </tr>
+          <tr role="row" class="nhsuk-table__row">
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Case manager </span>Paul Farmer
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases opened </span>1
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases closed </span>0
+            </td>
+          </tr>
+          <tr role="row" class="nhsuk-table__row">
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Case manager </span>Rita Patel
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases opened </span>2
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases closed </span>0
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="nhsuk-tabs__panel nhsuk-tabs__panel--hidden" id="past-week">
+      <table role="table" class="nhsuk-table-responsive">
+        <caption class="nhsuk-table__caption">
+          Past week
+        </caption>
+        <thead role="rowgroup" class="nhsuk-table__head">
+          <tr role="row">
+            <th role="columnheader" class="" scope="col">Case manager</th>
+            <th role="columnheader" class="" scope="col">Cases opened</th>
+            <th role="columnheader" class="" scope="col">Cases closed</th>
+          </tr>
+        </thead>
+        <tbody class="nhsuk-table__body">
+          <tr role="row" class="nhsuk-table__row">
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Case manager </span>David Francis
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases opened </span>24
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases closed </span>18
+            </td>
+          </tr>
+          <tr role="row" class="nhsuk-table__row">
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Case manager </span>Paul Farmer
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases opened </span>16
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases closed </span>20
+            </td>
+          </tr>
+          <tr role="row" class="nhsuk-table__row">
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Case manager </span>Rita Patel
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases opened </span>24
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases closed </span>27
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="nhsuk-tabs__panel nhsuk-tabs__panel--hidden" id="past-month">
+      <table role="table" class="nhsuk-table-responsive">
+        <caption class="nhsuk-table__caption">
+          Past month
+        </caption>
+        <thead role="rowgroup" class="nhsuk-table__head">
+          <tr role="row">
+            <th role="columnheader" class="" scope="col">Case manager</th>
+            <th role="columnheader" class="" scope="col">Cases opened</th>
+            <th role="columnheader" class="" scope="col">Cases closed</th>
+          </tr>
+        </thead>
+        <tbody class="nhsuk-table__body">
+          <tr role="row" class="nhsuk-table__row">
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Case manager </span>David Francis
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases opened </span>98
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases closed </span>95
+            </td>
+          </tr>
+          <tr role="row" class="nhsuk-table__row">
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Case manager </span>Paul Farmer
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases opened </span>122
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases closed </span>131
+            </td>
+          </tr>
+          <tr role="row" class="nhsuk-table__row">
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Case manager </span>Rita Patel
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases opened </span>126
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases closed </span>142
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="nhsuk-tabs__panel nhsuk-tabs__panel--hidden" id="past-year">
+      <table role="table" class="nhsuk-table-responsive">
+        <caption class="nhsuk-table__caption">
+          Past year
+        </caption>
+        <thead role="rowgroup" class="nhsuk-table__head">
+          <tr role="row">
+            <th role="columnheader" class="" scope="col">Case manager</th>
+            <th role="columnheader" class="" scope="col">Cases opened</th>
+            <th role="columnheader" class="" scope="col">Cases closed</th>
+          </tr>
+        </thead>
+        <tbody class="nhsuk-table__body">
+          <tr role="row" class="nhsuk-table__row">
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Case manager </span>David Francis
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases opened </span>1380
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases closed </span>1472
+            </td>
+          </tr>
+          <tr role="row" class="nhsuk-table__row">
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Case manager </span>Paul Farmer
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases opened </span>1129
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases closed </span>1083
+            </td>
+          </tr>
+          <tr role="row" class="nhsuk-table__row">
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Case manager </span>Rita Patel
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases opened </span>1539
+            </td>
+            <td role="cell" class="nhsuk-table__cell">
+              <span class="nhsuk-table-responsive__heading">Cases closed </span>1265
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+{{ end }}

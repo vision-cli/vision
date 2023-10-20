@@ -1,0 +1,11 @@
+<!-- https://service-manual.nhs.uk/design-system/components/select -->
+{{ define "select" }}
+  <div class="nhsuk-form-group">
+    <label class="nhsuk-label" for="{{ .ID }}">{{ .Label }}</label>
+    <select class="nhsuk-select" id="{{ .ID }}" name="{{ .Name }}">
+      {{ range .Options }}
+        <option value="{{ .Value }}">{{ .Text }}</option>
+      {{ end }}
+    </select>
+  </div>
+{{ end }}

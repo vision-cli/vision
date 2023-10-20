@@ -1,0 +1,24 @@
+<!-- https://service-manual.nhs.uk/design-system/components/character-count -->
+{{ define "character-count" }}
+  <div class="nhsuk-character-count" data-module="nhsuk-character-count" data-maxlength="{{ .Max }}">
+    <div class="nhsuk-form-group">
+      <h1 class="nhsuk-label-wrapper">
+        <label class="nhsuk-label nhsuk-label--l" for="more-detail">{{ .Message }}</label>
+      </h1>
+
+      {{ template "hint-text" .HintText }}
+
+
+      <textarea
+        class="nhsuk-textarea nhsuk-js-character-count"
+        id="more-detail"
+        name="more-detail"
+        rows="{{ .Rows }}"
+        aria-describedby="more-detail-hint"
+      ></textarea>
+    </div>
+    <div class="nhsuk-hint nhsuk-character-count__message" id="more-detail-info">
+      You can enter up to {{ .Max }} characters
+    </div>
+  </div>
+{{ end }}

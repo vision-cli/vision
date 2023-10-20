@@ -1,0 +1,19 @@
+<!-- https://service-manual.nhs.uk/design-system/components/radios -->
+{{ define "radio" }}
+  <div class="nhsuk-form-group">
+    <fieldset class="nhsuk-fieldset">
+      <legend class="nhsuk-fieldset__legend nhsuk-fieldset__legend--l">
+        <h1 class="nhsuk-fieldset__heading">{{ .Heading }}</h1>
+      </legend>
+
+      <div class="nhsuk-radios">
+        {{ range .Items }}
+          <div class="nhsuk-radios__item">
+            <input class="nhsuk-radios__input" id="{{ .ID }}" name="{{ .Name }}" type="radio" value="{{ .Value }}" />
+            <label class="nhsuk-label nhsuk-radios__label" for="{{ .ID }}">{{ .Label }}</label>
+          </div>
+        {{ end }}
+      </div>
+    </fieldset>
+  </div>
+{{ end }}

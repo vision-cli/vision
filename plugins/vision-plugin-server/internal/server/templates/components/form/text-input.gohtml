@@ -1,0 +1,7 @@
+<!-- https://service-manual.nhs.uk/design-system/components/text-input -->
+{{ define "text-input" }}
+  <div class="nhsuk-form-group">
+    <label class="nhsuk-label" for="{{ .ID }}">{{ .Label }}</label>
+    <input class="nhsuk-input" id="{{ .ID }}" name="{{ .Name }}" type="text" />
+  </div>
+{{ end }}

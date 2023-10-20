@@ -1,0 +1,17 @@
+<!-- https://service-manual.nhs.uk/design-system/components/fieldset -->
+{{ define "fieldset" }}
+  <fieldset class="nhsuk-fieldset">
+    <legend class="nhsuk-fieldset__legend nhsuk-fieldset__legend--xl">
+      <h1 class="nhsuk-fieldset__heading">{{ .Heading }}</h1>
+    </legend>
+
+    {{ range .Fields }}
+      <div class="nhsuk-form-group">
+        <label class="nhsuk-label" for="{{ .ID }}">
+          {{ if .Label }}{{ .Label }}{{ end }}<span class="nhsuk-u-visually-hidden">{{ .HiddenLabel }}</span>
+        </label>
+        <input class="nhsuk-input" id="{{ .ID }}" name="{{ .Name }}" type="text" />
+      </div>
+    {{ end }}
+  </fieldset>
+{{ end }}

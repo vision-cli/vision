@@ -1,0 +1,13 @@
+{
+  "gopls": {
+    "build.templateExtensions": ["gohtml"],
+    "ui.semanticTokens": true,
+    "formatting.local": "github.com/atos-digital"
+  },
+  "files.associations": {
+    "*.gohtml": "html"
+  },
+  "[go-template]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}
