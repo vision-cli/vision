@@ -19,6 +19,7 @@ import (
 //go:embed all:template
 var templateFiles embed.FS
 
+// TODO (luke): improve description
 var GenerateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "the plugin version",
