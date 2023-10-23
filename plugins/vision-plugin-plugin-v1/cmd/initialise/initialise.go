@@ -15,7 +15,7 @@ type PluginConfig struct {
 }
 
 type PluginData struct {
-	PluginData PluginConfig `json:"plugin_plugin"`
+	PluginData PluginConfig `json:"config"`
 }
 
 var InitCmd = &cobra.Command{
@@ -23,10 +23,6 @@ var InitCmd = &cobra.Command{
 	Short: "initialise a project with this plugin",
 	Long:  "initialise a project's vision.json file with this plugin's configuration values",
 	RunE:  runCommand,
-}
-
-type visionJson struct {
-	Contents map[any]any
 }
 
 func runCommand(cmd *cobra.Command, args []string) error {

@@ -3,6 +3,7 @@ package plugin
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 )
 
@@ -60,7 +61,13 @@ type Init struct {
 }
 
 func (e Executor) Init() (*Init, error) {
-	cmd := exec.Command(e.FullPath, "init", ".")
+	var loc string
+	if os.Args[1] == "" {
+		loc = ""
+	} else {
+		loc = os.Args[1]
+	}
+	cmd := exec.Command(e.FullPath, "init", loc)
 	b, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("init command: %w", err)
