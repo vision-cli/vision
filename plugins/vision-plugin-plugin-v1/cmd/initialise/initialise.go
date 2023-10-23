@@ -45,20 +45,6 @@ func runCommand(cmd *cobra.Command, args []string) error {
 		},
 	}
 
-	// vPath := filepath.Join(path, "vision.json")
-	// f, err := os.Open(vPath)
-	// if err != nil {
-	// 	return fmt.Errorf("creating vision.json: %w", err)
-	// }
-	// defer f.Close()
-
-	// b, err := io.ReadAll(f)
-	// if err != nil {
-	// 	return fmt.Errorf("reading vision.json: %w", err)
-	// }
-
-	// err = json.Unmarshal(b)
-
 	err = json.NewEncoder(os.Stdout).Encode(pd)
 
 	if err != nil {
