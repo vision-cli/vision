@@ -27,7 +27,7 @@ var InitCmd = &cobra.Command{
 
 func runCommand(cmd *cobra.Command, args []string) error {
 	var path string
-	if args[0] == "" {
+	if len(args) == 0 {
 		path = "."
 	} else {
 		path = args[0]

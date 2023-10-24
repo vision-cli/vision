@@ -21,16 +21,39 @@ var templateFiles embed.FS
 
 // TODO (luke): improve description
 var GenerateCmd = &cobra.Command{
-	Use:   "generate VISION-CONFIG-PATH",
+	Use:   "generate",
 	Short: "generate the plugins code",
 	Long:  "generate the plugins code using the vision.json config",
-	RunE:  run,
+	RunE:  generate,
+}
+
+type success struct {
+	Success bool `json:"success"`
+}
+
+func generate(cmd *cobra.Command, args []string) error {
+	err := run(cmd, args)
+	jEnc := json.NewEncoder(os.Stdout)
+	if err != nil {
+		_ = jEnc.Encode(success{Success: false})
+		return fmt.Errorf("generating template: %w", err)
+	}
+
+	err = jEnc.Encode(success{Success: true})
+	if err != nil {
+		return fmt.Errorf("encoding JSON response: %w", err)
+	}
+	return nil
 }
 
 func run(cmd *cobra.Command, args []string) error {
 	var vPath string
-	if args[0] == "" {
-		vPath = ""
+	wd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("getting working directory: %w", err)
+	}
+	if len(args) < 1 {
+		vPath = filepath.Join(wd, "vision.json")
 	} else {
 		vPath = args[0]
 	}
@@ -141,8 +164,6 @@ func cloneExecTmpl(src, dst string, vj *initialise.PluginConfig) error {
 	if err != nil {
 		return fmt.Errorf("creating template file: %w", err)
 	}
-
-	fmt.Printf("vision json: %+v\n", vj)
 
 	return tmplEx.Execute(f, vj)
 	// return nil
