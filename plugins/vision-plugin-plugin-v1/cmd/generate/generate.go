@@ -21,9 +21,9 @@ var templateFiles embed.FS
 
 // TODO (luke): improve description
 var GenerateCmd = &cobra.Command{
-	Use:   "generate",
-	Short: "the plugin version",
-	Long:  "ditto",
+	Use:   "generate VISION-CONFIG-PATH",
+	Short: "generate the plugins code",
+	Long:  "generate the plugins code using the vision.json config",
 	RunE:  run,
 }
 
