@@ -23,8 +23,8 @@ var templateFiles embed.FS
 // TODO (luke): improve description
 var GenerateCmd = &cobra.Command{
 	Use:   "generate",
-	Short: "generate the plugins code",
-	Long:  "generate the plugins code using the vision.json config",
+	Short: "generate the code from templates",
+	Long:  "generate code in the template files for the Plugin plugin using the values in the vision.json file",
 	RunE:  generate,
 }
 
