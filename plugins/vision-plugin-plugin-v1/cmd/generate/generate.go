@@ -102,18 +102,6 @@ func run(cmd *cobra.Command, args []string) error {
 	})
 }
 
-func getLatestGoVersion() (string, error) {
-	cmd := "curl 'https://go.dev/VERSION?m=text'"
-	b, err := exec.Command("bash", "-c", cmd).Output()
-	if err != nil {
-		return "", fmt.Errorf("curling Go version: %w", err)
-	}
-
-	goVersion := string(b)[2:8]
-
-	return goVersion, nil
-}
-
 func openVisionJson(vPath string) (*initialise.PluginData, error) {
 	f, err := os.OpenFile(vPath, os.O_RDWR, 0444)
 	if err != nil {
@@ -139,11 +127,6 @@ func openVisionJson(vPath string) (*initialise.PluginData, error) {
 
 	// convert struct to use correct JSON tag
 	jsonData.PluginConfig = convConf.PluginData
-	gv, err := getLatestGoVersion()
-	if err != nil {
-		return nil, fmt.Errorf("getting go version: %w", err)
-	}
-	jsonData.PluginConfig.GoVersion = gv
 
 	return &jsonData, nil
 }
