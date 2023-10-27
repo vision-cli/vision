@@ -8,7 +8,7 @@ import (
 )
 
 var GenerateCmd = &cobra.Command{
-	Use:   "version",
+	Use:   "generate",
 	Short: "generate the code from templates",
 	Long:  "generate code in the template files for the {{ .PluginName }} plugin using the values in the vision.json file",
 	Run: func(cmd *cobra.Command, args []string) {
