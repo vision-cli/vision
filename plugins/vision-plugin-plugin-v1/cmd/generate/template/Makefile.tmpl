@@ -1,0 +1,20 @@
+GOBIN = $(shell go env GOPATH)/bin
+
+all: run
+.PHONY: all
+
+run:
+	@go run main.go
+.PHONY: run
+
+install:
+  @go build -o vision-plugin-{{ .Plugin }}-v1
+  @mv vision-plugin-{{ .Plugin }}-v1 ${GOBIN}
+
+build: test
+	@go build main.go
+.PHONY: build
+
+test:
+	@go test -v ./...
+.PHONY: test%
