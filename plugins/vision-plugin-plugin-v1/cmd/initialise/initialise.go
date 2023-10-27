@@ -11,6 +11,7 @@ import (
 type PluginConfig struct {
 	PluginName string `json:"plugin_name"`
 	ModuleName string `json:"module_name"`
+	GoVersion  string `json:"go_version"`
 }
 
 type PluginData struct {

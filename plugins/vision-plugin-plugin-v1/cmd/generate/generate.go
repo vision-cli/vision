@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -31,6 +32,7 @@ type success struct {
 	Success bool `json:"success"`
 }
 
+// wraps the run function to determine a success or failed response
 func generate(cmd *cobra.Command, args []string) error {
 	err := run(cmd, args)
 	jEnc := json.NewEncoder(os.Stdout)
@@ -72,8 +74,6 @@ func run(cmd *cobra.Command, args []string) error {
 	return fs.WalkDir(templateFiles, "template", func(path string, d fs.DirEntry, err error) error {
 		newPath := filepath.Join(pluginDir, strings.TrimPrefix(path, "template/"))
 
-		// fmt.Println("newPath: ", newPath)
-
 		switch {
 		case path == "template": // skip the top level template dir
 			return nil
@@ -94,6 +94,18 @@ func run(cmd *cobra.Command, args []string) error {
 			return nil
 		}
 	})
+}
+
+func getLatestGoVersion() (string, error) {
+	cmd := "curl 'https://go.dev/VERSION?m=text'"
+	b, err := exec.Command("bash", "-c", cmd).Output()
+	if err != nil {
+		return "", fmt.Errorf("curling Go version: %w", err)
+	}
+
+	goVersion := string(b)[2:8]
+
+	return goVersion, nil
 }
 
 func openVisionJson(vPath string) (*initialise.PluginData, error) {
@@ -121,6 +133,11 @@ func openVisionJson(vPath string) (*initialise.PluginData, error) {
 
 	// convert struct to use correct JSON tag
 	jsonData.PluginConfig = convConf.PluginData
+	gv, err := getLatestGoVersion()
+	if err != nil {
+		return nil, fmt.Errorf("getting go version: %w", err)
+	}
+	jsonData.PluginConfig.GoVersion = gv
 
 	return &jsonData, nil
 }
@@ -178,5 +195,4 @@ func cloneExecTmpl(src, dst string, vj *initialise.PluginData) error {
 	}
 
 	return tmplEx.Execute(f, vj.PluginConfig)
-	// return nil
 }
