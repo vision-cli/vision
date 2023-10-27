@@ -41,10 +41,16 @@ func generate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("generating template: %w", err)
 	}
 
+	_, err = exec.Command("go", "mod", "tidy").Output()
+	if err != nil {
+		return fmt.Errorf("running 'go mod tidy': %w", err)
+	}
+
 	err = jEnc.Encode(success{Success: true})
 	if err != nil {
 		return fmt.Errorf("encoding JSON response: %w", err)
 	}
+
 	return nil
 }
 
