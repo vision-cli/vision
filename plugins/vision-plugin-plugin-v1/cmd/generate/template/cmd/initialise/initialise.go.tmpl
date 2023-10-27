@@ -14,8 +14,8 @@ var InitCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		json.NewEncoder(os.Stdout).Encode(map[string]any{
 			"config": map[string]any{
-				"plugin_name": {{ .PluginName }},
-				"module_name": {{ .ModuleName }},
+				"plugin_name": "{{ .PluginName }}",
+				"module_name": "{{ .ModuleName }}",
 			},
 		})
 	}}

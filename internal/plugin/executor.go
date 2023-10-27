@@ -62,17 +62,19 @@ type Init struct {
 
 func (e Executor) Init() (*Init, error) {
 	var loc string
-	if os.Args[1] == "" {
-		loc = ""
+	if len(os.Args) < 4 {
+		loc = "."
 	} else {
-		loc = os.Args[1]
+		loc = os.Args[3]
 	}
+
 	cmd := exec.Command(e.FullPath, "init", loc)
 	b, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("init command: %w", err)
 	}
 	var i Init
+
 	err = json.Unmarshal(b, &i)
 	if err != nil {
 		return nil, fmt.Errorf("init: invalid json resp from plugin: %w", err)

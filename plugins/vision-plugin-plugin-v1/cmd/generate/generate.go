@@ -64,7 +64,6 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	pluginDir := strings.TrimSuffix(vPath, "vision.json")
-
 	err = cloneDir(pluginDir)
 	if err != nil {
 		return fmt.Errorf("cloning directory: %w", err)
@@ -72,6 +71,8 @@ func run(cmd *cobra.Command, args []string) error {
 
 	return fs.WalkDir(templateFiles, "template", func(path string, d fs.DirEntry, err error) error {
 		newPath := filepath.Join(pluginDir, strings.TrimPrefix(path, "template/"))
+
+		// fmt.Println("newPath: ", newPath)
 
 		switch {
 		case path == "template": // skip the top level template dir
@@ -95,7 +96,7 @@ func run(cmd *cobra.Command, args []string) error {
 	})
 }
 
-func openVisionJson(vPath string) (*initialise.PluginConfig, error) {
+func openVisionJson(vPath string) (*initialise.PluginData, error) {
 	f, err := os.OpenFile(vPath, os.O_RDWR, 0444)
 	if err != nil {
 		return nil, fmt.Errorf("opening config file: %w", err)
@@ -107,18 +108,29 @@ func openVisionJson(vPath string) (*initialise.PluginConfig, error) {
 		return nil, fmt.Errorf("reading bytes: %w", err)
 	}
 
-	var jsonData initialise.PluginConfig
-	if err = json.Unmarshal(b, &jsonData); err != nil {
+	type convertConfig struct {
+		PluginData initialise.PluginConfig `json:"plugin"`
+	}
+
+	var convConf convertConfig
+	var jsonData initialise.PluginData
+
+	if err = json.Unmarshal(b, &convConf); err != nil {
 		return nil, fmt.Errorf("unmarshalling json: %w", err)
 	}
+
+	// convert struct to use correct JSON tag
+	jsonData.PluginConfig = convConf.PluginData
 
 	return &jsonData, nil
 }
 
+// if path is a directory, just copy it
 func cloneDir(path string) error {
 	return os.MkdirAll(path, os.ModePerm)
 }
 
+// if file isn't template file, just copy it
 func cloneFile(src, dst string) error {
 	fsrc, err := templateFiles.Open(src)
 	if err != nil {
@@ -134,7 +146,7 @@ func cloneFile(src, dst string) error {
 	return err
 }
 
-func cloneExecTmpl(src, dst string, vj *initialise.PluginConfig) error {
+func cloneExecTmpl(src, dst string, vj *initialise.PluginData) error {
 	// open file and read it
 	trimmedNewPath := strings.TrimSuffix(dst, filepath.Ext(dst))
 	err := cloneFile(src, trimmedNewPath)
@@ -165,6 +177,6 @@ func cloneExecTmpl(src, dst string, vj *initialise.PluginConfig) error {
 		return fmt.Errorf("creating template file: %w", err)
 	}
 
-	return tmplEx.Execute(f, vj)
+	return tmplEx.Execute(f, vj.PluginConfig)
 	// return nil
 }

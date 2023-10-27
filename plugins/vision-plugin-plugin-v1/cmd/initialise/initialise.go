@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -15,7 +14,7 @@ type PluginConfig struct {
 }
 
 type PluginData struct {
-	PluginData PluginConfig `json:"config"`
+	PluginConfig PluginConfig `json:"config"`
 }
 
 var InitCmd = &cobra.Command{
@@ -26,26 +25,14 @@ var InitCmd = &cobra.Command{
 }
 
 func runCommand(cmd *cobra.Command, args []string) error {
-	var path string
-	if len(args) == 0 {
-		path = "."
-	} else {
-		path = args[0]
-	}
-	err := os.MkdirAll(strings.TrimSuffix(path, "vision.json"), os.ModePerm)
-	if err != nil {
-		return fmt.Errorf("creating init dir: %w", err)
-	}
-
-	// TODO (luke): enable PluginName and ModuleName to be read from config
 	pd := PluginData{
-		PluginData: PluginConfig{
+		PluginConfig: PluginConfig{
 			PluginName: "sample-plugin",
 			ModuleName: "github.com/my-org/my-plugin",
 		},
 	}
 
-	err = json.NewEncoder(os.Stdout).Encode(pd)
+	err := json.NewEncoder(os.Stdout).Encode(pd)
 
 	if err != nil {
 		return fmt.Errorf("encoding json: %w", err)
