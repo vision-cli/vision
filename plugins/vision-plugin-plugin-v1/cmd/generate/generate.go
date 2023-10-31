@@ -25,7 +25,7 @@ var GenerateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "generate the code from templates",
 	Long:  "generate code in the template files for the Plugin plugin using the values in the vision.json file",
-	RunE:  generate,
+	RunE:  generateAndCheck,
 }
 
 type success struct {
@@ -33,7 +33,7 @@ type success struct {
 }
 
 // wraps the run function to determine a success or failed response
-func generate(cmd *cobra.Command, args []string) error {
+func generateAndCheck(cmd *cobra.Command, args []string) error {
 	err := run(cmd, args)
 	jEnc := json.NewEncoder(os.Stdout)
 	if err != nil {
