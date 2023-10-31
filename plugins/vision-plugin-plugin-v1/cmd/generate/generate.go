@@ -4,13 +4,13 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"io"
 	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"text/template"
 
 	"github.com/spf13/cobra"
 
@@ -20,7 +20,6 @@ import (
 //go:embed all:template
 var templateFiles embed.FS
 
-// TODO (luke): improve description
 var GenerateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "generate the code from templates",
