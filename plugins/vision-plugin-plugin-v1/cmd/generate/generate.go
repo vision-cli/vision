@@ -38,8 +38,9 @@ type convertConfig struct {
 
 // wraps the run function to determine a success or failed response
 func generateAndCheck(cmd *cobra.Command, args []string) error {
-	err := run(cmd, args)
 	jEnc := json.NewEncoder(os.Stdout)
+
+	err := run(cmd, args)
 	if err != nil {
 		_ = jEnc.Encode(success{Success: false})
 		return fmt.Errorf("generating template: %w", err)
