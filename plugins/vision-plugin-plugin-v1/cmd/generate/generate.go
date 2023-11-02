@@ -31,6 +31,11 @@ type success struct {
 	Success bool `json:"success"`
 }
 
+type convertConfig struct {
+	PluginConfig initialise.PluginConfig
+	GoVersion    string
+}
+
 // wraps the run function to determine a success or failed response
 func generateAndCheck(cmd *cobra.Command, args []string) error {
 	err := run(cmd, args)
@@ -38,11 +43,6 @@ func generateAndCheck(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		_ = jEnc.Encode(success{Success: false})
 		return fmt.Errorf("generating template: %w", err)
-	}
-
-	_, err = exec.Command("go", "mod", "tidy").Output()
-	if err != nil {
-		return fmt.Errorf("running 'go mod tidy': %w", err)
 	}
 
 	err = jEnc.Encode(success{Success: true})
@@ -54,15 +54,30 @@ func generateAndCheck(cmd *cobra.Command, args []string) error {
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	var vPath string
+	var vPath, outputPath string
+
 	wd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("getting working directory: %w", err)
 	}
+
 	if len(args) < 1 {
+		outputPath = "."
 		vPath = filepath.Join(wd, "vision.json")
+	} else if len(args) == 2 {
+		outputPath = args[0]
+		vPath = args[1]
 	} else {
-		vPath = args[0]
+		outputPath = args[0]
+		vPath = filepath.Join(wd, "vision.json")
+	}
+
+	// if outputPath dir does not exist, create dir
+	_, err = os.Stat(outputPath)
+	if os.IsNotExist(err) {
+		os.MkdirAll(outputPath, os.ModePerm)
+	} else if err != nil {
+		return fmt.Errorf("searching for output dir: %w", err)
 	}
 
 	vj, err := openVisionJson(vPath)
@@ -70,14 +85,26 @@ func run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("opening vision.json: %w", err)
 	}
 
-	pluginDir := strings.TrimSuffix(vPath, "vision.json")
-	err = cloneDir(pluginDir)
+	err = walkDirAndClone(wd, outputPath, vj)
 	if err != nil {
-		return fmt.Errorf("cloning directory: %w", err)
+		return fmt.Errorf("walking dir and cloning: %w", err)
 	}
+	return execGoModTidy(outputPath)
+}
 
+func execGoModTidy(outputPath string) error {
+	c := exec.Command("go", "mod", "tidy")
+	c.Dir = outputPath
+	_, err := c.Output()
+	if err != nil {
+		return fmt.Errorf("running 'go mod tidy': %w", err)
+	}
+	return nil
+}
+
+func walkDirAndClone(wd, outputPath string, vj *convertConfig) error {
 	return fs.WalkDir(templateFiles, "template", func(path string, d fs.DirEntry, err error) error {
-		newPath := filepath.Join(pluginDir, strings.TrimPrefix(path, "template/"))
+		newPath := filepath.Join(wd, outputPath, strings.TrimPrefix(path, "template/"))
 
 		switch {
 		case path == "template": // skip the top level template dir
@@ -99,11 +126,6 @@ func run(cmd *cobra.Command, args []string) error {
 			return nil
 		}
 	})
-}
-
-type convertConfig struct {
-	PluginConfig initialise.PluginConfig
-	GoVersion    string
 }
 
 func openVisionJson(vPath string) (*convertConfig, error) {
@@ -149,7 +171,9 @@ func cloneFile(src, dst string) error {
 	}
 	defer fsrc.Close()
 	fdst, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
-	if err != nil {
+	if os.IsExist(err) {
+		return nil
+	} else if err != nil {
 		return fmt.Errorf("[clone] opening from clone: %w", err)
 	}
 	defer fdst.Close()
