@@ -38,6 +38,57 @@ boilerplate.
 
 ## Usage
 
+### 1. Initialise a Vision project.
+
+`init` can accept a project name with the `-p` flag, where it creates a `vision.json` in the current working directory, and/or it can accept an optional argument that creates a new directory. Not including the `-p` flag assigns the name of the directory as the project name in `vision.json`.
+
+```bash
+tonystark:~ vision init [DIR] [-p/--project PROJECTNAME]
+```
+
+```bash
+tonystark:~ vision init avengers
+
+vision init avengers-assemble \
+  -p=avengers \
+  -m="github.com/stark-industries/avengers-assemble"
+```
+
+This creates a directory called `avengers` and creates a `vision.json` file within `avengers`. It also assigns the `project_name` as `avengers`.
+
+```json
+{
+  "project_name": "avengers"
+}
+```
+
+### 2. Initialise plugins to use inside project.
+
+We'll initialise a new Go REST server inside the avengers directory.
+
+```bash
+tonystark:~/avengers vision gorest init
+```
+
+This adds a template configuration to the `vision.json` file which needs to be changed to your specific data.
+
+### 3. Generate the template files from the plugin
+
+To create a
+
+```bash
+tonystark:~/avengers vision plugin init
+```
+
+```
+- myproject
+|__ services
+  |__ user_service
+    |__  cmd
+    |__ internal
+|__ vision.json
+```
+
 ## Design
 
 The vision cli is really a wrapper around vision plugins. The cli's purpose is to provide helper functions around managing plugins. The plugins will do the code generation.
