@@ -21,7 +21,7 @@ import (
 var templateFiles embed.FS
 
 var GenerateCmd = &cobra.Command{
-	Use:   "generate",
+	Use:   "generate OUTPUT CONFIG",
 	Short: "generate the code from templates",
 	Long:  "generate code in the template files for the Plugin plugin using the values in the vision.json file",
 	RunE:  generateAndCheck,
@@ -118,18 +118,10 @@ func openVisionJson(vPath string) (*convertConfig, error) {
 		return nil, fmt.Errorf("reading bytes: %w", err)
 	}
 
-	// var jsonData initialise.PluginData
-
-	// if err = json.Unmarshal(b, &convConf); err != nil {
-	// 	return nil, fmt.Errorf("unmarshalling json: %w", err)
-	// }
-
 	var jsonData initialise.PluginData
 	if err = json.Unmarshal(b, &jsonData); err != nil {
 		return nil, fmt.Errorf("unmarshalling json: %w", err)
 	}
-
-	fmt.Println("DATA OBJECT", jsonData)
 
 	gv, err := getLatestGoVersion()
 	if err != nil {
@@ -139,10 +131,7 @@ func openVisionJson(vPath string) (*convertConfig, error) {
 	// convert struct to use correct JSON tag
 	var convConf convertConfig
 	convConf.PluginConfig = jsonData.PluginConfig
-
 	convConf.GoVersion = gv
-
-	fmt.Println("go version:", convConf.GoVersion)
 
 	return &convConf, nil
 }
