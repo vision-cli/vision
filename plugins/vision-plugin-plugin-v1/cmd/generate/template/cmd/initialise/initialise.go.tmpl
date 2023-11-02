@@ -16,7 +16,7 @@ type PluginConfig struct {
 }
 
 type PluginData struct {
-	PluginConfig PluginConfig `json:"config"`
+	PluginConfig PluginConfig `json:"{{ .PluginConfig }}"`
 }
 
 var InitCmd = &cobra.Command{
@@ -34,8 +34,8 @@ func runCommand(cmd *cobra.Command, args []string) error {
 
 	pd := PluginData{
 		PluginConfig: PluginConfig{
-			PluginName: "{{ .PluginName }}",
-			ModuleName: "{{ .ModuleName }}",
+			PluginName: "{{ .PluginConfig.PluginName }}",
+			ModuleName: "{{ .PluginConfig.ModuleName }}",
 			GoVersion:  gv,
 		},
 	}

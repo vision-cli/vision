@@ -14,7 +14,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"{{ .ModuleName }}/cmd/initialise"
+	"{{ .PluginConfig.ModuleName }}/cmd/initialise"
 )
 
 //go:embed all:template
@@ -182,5 +182,5 @@ func cloneExecTmpl(src, dst string, vj *initialise.PluginData) error {
 		return fmt.Errorf("creating template file: %w", err)
 	}
 
-	return tmplEx.Execute(f, vj.PluginConfig)
+	return tmplEx.Execute(f, vj)
 }

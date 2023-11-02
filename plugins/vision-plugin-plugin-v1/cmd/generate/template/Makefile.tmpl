@@ -8,8 +8,8 @@ run:
 .PHONY: run
 
 install:
-	@go build -o vision-plugin-{{ .PluginName }}-v1
-	@mv vision-plugin-{{ .PluginName }}-v1 ${GOBIN}/vision-plugin-{{ .PluginName }}-v1
+	@go build -o vision-plugin-{{ .PluginConfig.PluginName }}-v1
+	@mv vision-plugin-{{ .PluginConfig.PluginName }}-v1 ${GOBIN}/vision-plugin-{{ .PluginConfig.PluginName }}-v1
 .PHONY: install
 
 build: test
