@@ -101,7 +101,12 @@ func run(cmd *cobra.Command, args []string) error {
 	})
 }
 
-func openVisionJson(vPath string) (*initialise.PluginData, error) {
+type convertConfig struct {
+	PluginConfig initialise.PluginConfig
+	GoVersion    string
+}
+
+func openVisionJson(vPath string) (*convertConfig, error) {
 	f, err := os.OpenFile(vPath, os.O_RDWR, 0444)
 	if err != nil {
 		return nil, fmt.Errorf("opening config file: %w", err)
@@ -113,21 +118,33 @@ func openVisionJson(vPath string) (*initialise.PluginData, error) {
 		return nil, fmt.Errorf("reading bytes: %w", err)
 	}
 
-	type convertConfig struct {
-		PluginData initialise.PluginConfig `json:"plugin"`
-	}
+	// var jsonData initialise.PluginData
 
-	var convConf convertConfig
+	// if err = json.Unmarshal(b, &convConf); err != nil {
+	// 	return nil, fmt.Errorf("unmarshalling json: %w", err)
+	// }
+
 	var jsonData initialise.PluginData
-
-	if err = json.Unmarshal(b, &convConf); err != nil {
+	if err = json.Unmarshal(b, &jsonData); err != nil {
 		return nil, fmt.Errorf("unmarshalling json: %w", err)
 	}
 
-	// convert struct to use correct JSON tag
-	jsonData.PluginConfig = convConf.PluginData
+	fmt.Println("DATA OBJECT", jsonData)
 
-	return &jsonData, nil
+	gv, err := getLatestGoVersion()
+	if err != nil {
+		return nil, fmt.Errorf("getting latest Go version: %w", err)
+	}
+
+	// convert struct to use correct JSON tag
+	var convConf convertConfig
+	convConf.PluginConfig = jsonData.PluginConfig
+
+	convConf.GoVersion = gv
+
+	fmt.Println("go version:", convConf.GoVersion)
+
+	return &convConf, nil
 }
 
 // if path is a directory, just copy it
@@ -151,7 +168,7 @@ func cloneFile(src, dst string) error {
 	return err
 }
 
-func cloneExecTmpl(src, dst string, vj *initialise.PluginData) error {
+func cloneExecTmpl(src, dst string, vj *convertConfig) error {
 	// open file and read it
 	trimmedNewPath := strings.TrimSuffix(dst, filepath.Ext(dst))
 	err := cloneFile(src, trimmedNewPath)
@@ -183,4 +200,16 @@ func cloneExecTmpl(src, dst string, vj *initialise.PluginData) error {
 	}
 
 	return tmplEx.Execute(f, vj)
+}
+
+func getLatestGoVersion() (string, error) {
+	cmd := "curl 'https://go.dev/VERSION?m=text'"
+	b, err := exec.Command("bash", "-c", cmd).Output()
+	if err != nil {
+		return "", fmt.Errorf("curling Go version: %w", err)
+	}
+
+	goVersion := string(b)[2:8]
+
+	return goVersion, nil
 }
