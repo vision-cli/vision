@@ -18,6 +18,10 @@ type PluginData struct {
 	PluginConfig PluginConfig `json:"plugin"`
 }
 
+type visionPluginData struct {
+	PluginConfig PluginConfig `json:"config"`
+}
+
 var InitCmd = &cobra.Command{
 	Use:   "init",
 	Short: "initialise a project with this plugin",
@@ -27,7 +31,7 @@ var InitCmd = &cobra.Command{
 
 func runCommand(cmd *cobra.Command, args []string) error {
 
-	pd := PluginData{
+	pd := visionPluginData{
 		PluginConfig: PluginConfig{
 			PluginName: "sample-plugin",
 			ModuleName: "github.com/my-org/my-plugin",

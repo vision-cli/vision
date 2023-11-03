@@ -32,7 +32,7 @@ type success struct {
 }
 
 type convertConfig struct {
-	PluginConfig initialise.PluginConfig
+	PluginConfig initialise.PluginConfig `json:"config"`
 	GoVersion    string
 }
 
@@ -94,6 +94,9 @@ func run(cmd *cobra.Command, args []string) error {
 }
 
 func execGoModTidy(outputPath string) error {
+	if outputPath == "." {
+		outputPath = ""
+	}
 	c := exec.Command("go", "mod", "tidy")
 	c.Dir = outputPath
 	_, err := c.Output()
