@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -13,6 +11,11 @@ import (
 type PluginConfig struct {
 	PluginName string `json:"plugin_name"`
 	ModuleName string `json:"module_name"`
+	Command    string `json:"command"`
+}
+
+type PluginData struct {
+	PluginConfig PluginConfig `json:"plugin"`
 }
 
 var InitCmd = &cobra.Command{
@@ -23,27 +26,19 @@ var InitCmd = &cobra.Command{
 }
 
 func runCommand(cmd *cobra.Command, args []string) error {
-	var path string
-	if args[0] == "" {
-		path = ""
-	} else {
-		path = args[0]
+
+	pd := PluginData{
+		PluginConfig: PluginConfig{
+			PluginName: "sample-plugin",
+			ModuleName: "github.com/my-org/my-plugin",
+			Command:    "changeme",
+		},
 	}
-	err := os.MkdirAll(strings.TrimSuffix(path, "vision.json"), os.ModePerm)
+
+	err := json.NewEncoder(os.Stdout).Encode(pd)
+
 	if err != nil {
-		return fmt.Errorf("creating init dir: %w", err)
+		return fmt.Errorf("encoding json: %w", err)
 	}
-
-	pc := PluginConfig{
-		PluginName: "sample-plugin",
-		ModuleName: "github.com/my-org/my-plugin",
-	}
-
-	vPath := filepath.Join(path, "vision.json")
-	f, err := os.Create(vPath)
-	if err != nil {
-		return fmt.Errorf("creating vision.json: %w", err)
-	}
-
-	return json.NewEncoder(f).Encode(pc)
+	return nil
 }

@@ -3,6 +3,7 @@ package plugin
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 )
 
@@ -27,7 +28,7 @@ func (e Executor) Info() (*Info, error) {
 	cmd := exec.Command(e.FullPath, "info")
 	b, err := cmd.Output()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("info command: %w", err)
 	}
 	var i Info
 	err = json.Unmarshal(b, &i)
@@ -45,7 +46,7 @@ func (e Executor) Version() (*Version, error) {
 	cmd := exec.Command(e.FullPath, "version")
 	b, err := cmd.Output()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("version command: %w", err)
 	}
 	var v Version
 	err = json.Unmarshal(b, &v)
@@ -60,12 +61,20 @@ type Init struct {
 }
 
 func (e Executor) Init() (*Init, error) {
-	cmd := exec.Command(e.FullPath, "init")
+	var loc string
+	if len(os.Args) < 4 {
+		loc = "."
+	} else {
+		loc = os.Args[3]
+	}
+
+	cmd := exec.Command(e.FullPath, "init", loc)
 	b, err := cmd.Output()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("init command: %w", err)
 	}
 	var i Init
+
 	err = json.Unmarshal(b, &i)
 	if err != nil {
 		return nil, fmt.Errorf("init: invalid json resp from plugin: %w", err)
@@ -81,12 +90,12 @@ func (e Executor) Generate() (*Generate, error) {
 	cmd := exec.Command(e.FullPath, "generate")
 	b, err := cmd.Output()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("generate command: %w", err)
 	}
 	var g Generate
 	err = json.Unmarshal(b, &g)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("generate: invalid json resp from plugin: %w", err)
 	}
 	return &g, nil
 }
