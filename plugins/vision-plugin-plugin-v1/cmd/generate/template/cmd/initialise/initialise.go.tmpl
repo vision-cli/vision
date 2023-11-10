@@ -15,7 +15,11 @@ type PluginConfig struct {
 }
 
 type PluginData struct {
-	PluginConfig PluginConfig `json:"{{ .PluginConfig.PluginName }}"`
+	PluginConfig PluginConfig `json:"{{ .PluginConfig.Command }}"`
+}
+
+type visionPluginData struct {
+	PluginConfig PluginConfig `json:"config"`
 }
 
 var InitCmd = &cobra.Command{
@@ -27,7 +31,7 @@ var InitCmd = &cobra.Command{
 
 func runCommand(cmd *cobra.Command, args []string) error {
 
-	pd := PluginData{
+	pd := visionPluginData{
 		PluginConfig: PluginConfig{
 			PluginName: "{{ .PluginConfig.PluginName }}",
 			ModuleName: "{{ .PluginConfig.ModuleName }}",

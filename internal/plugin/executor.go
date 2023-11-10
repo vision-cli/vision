@@ -83,11 +83,24 @@ func (e Executor) Init() (*Init, error) {
 }
 
 type Generate struct {
-	Success bool `json:"success"`
+	Success bool   `json:"success"`
+	Output  string `json:"output"`
 }
 
 func (e Executor) Generate() (*Generate, error) {
-	cmd := exec.Command(e.FullPath, "generate")
+	var outputPath, visionLoc string
+	if len(os.Args) < 4 {
+		outputPath = "."
+		visionLoc = "."
+	} else if len(os.Args) < 5 {
+		outputPath = os.Args[3]
+		visionLoc = "."
+	} else {
+		outputPath = os.Args[3]
+		visionLoc = os.Args[4]
+	}
+
+	cmd := exec.Command(e.FullPath, "generate", outputPath, visionLoc)
 	b, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("generate command: %w", err)

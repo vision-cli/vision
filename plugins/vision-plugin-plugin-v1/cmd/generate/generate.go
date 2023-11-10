@@ -28,11 +28,12 @@ var GenerateCmd = &cobra.Command{
 }
 
 type success struct {
-	Success bool `json:"success"`
+	Success bool   `json:"success"`
+	Output  string `json:"output"`
 }
 
 type convertConfig struct {
-	PluginConfig initialise.PluginConfig
+	PluginConfig initialise.PluginConfig `json:"config"`
 	GoVersion    string
 }
 
@@ -42,7 +43,7 @@ func generateAndCheck(cmd *cobra.Command, args []string) error {
 
 	err := run(cmd, args)
 	if err != nil {
-		_ = jEnc.Encode(success{Success: false})
+		_ = jEnc.Encode(success{Success: false, Output: err.Error()})
 		return fmt.Errorf("generating template: %w", err)
 	}
 
@@ -64,6 +65,9 @@ func run(cmd *cobra.Command, args []string) error {
 
 	if len(args) < 1 {
 		outputPath = "."
+		vPath = filepath.Join(wd, "vision.json")
+	} else if len(args) == 2 && args[1] == "." {
+		outputPath = args[0]
 		vPath = filepath.Join(wd, "vision.json")
 	} else if len(args) == 2 {
 		outputPath = args[0]
@@ -94,6 +98,9 @@ func run(cmd *cobra.Command, args []string) error {
 }
 
 func execGoModTidy(outputPath string) error {
+	if outputPath == "." {
+		outputPath = ""
+	}
 	c := exec.Command("go", "mod", "tidy")
 	c.Dir = outputPath
 	_, err := c.Output()
