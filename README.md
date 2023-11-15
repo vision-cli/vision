@@ -89,6 +89,10 @@ tonystark:~/avengers vision plugin init
 |__ vision.json
 ```
 
+### Visual tutorial/demo
+
+To see an example of how to successfully use a vision plugin, you can watch [this video](https://asciinema.org/a/WJD7PJUvkVyDMzl6oleSGhv6i).
+
 ## Design
 
 The vision cli is really a wrapper around vision plugins. The cli's purpose is to provide helper functions around managing plugins. The plugins will do the code generation.
