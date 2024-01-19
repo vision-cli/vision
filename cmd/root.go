@@ -1,93 +1,180 @@
 package cmd
 
 import (
-	"errors"
+	_ "embed"
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
 
+	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
-	"github.com/vision-cli/common/execute"
-	cc "github.com/vision-cli/common/plugins"
-	"github.com/vision-cli/vision/cli"
-	"github.com/vision-cli/vision/cmd/config"
-	"github.com/vision-cli/vision/plugins"
+	"github.com/spf13/pflag"
+
+	"github.com/vision-cli/vision/cmd/doctor"
+	"github.com/vision-cli/vision/cmd/initialise"
+	"github.com/vision-cli/vision/cmd/plugins"
+	"github.com/vision-cli/vision/internal/plugin"
 )
 
+// Finds available plugins and initialises them into commands
 func init() {
-	rootCmd.AddCommand(config.RootCmd)
-	osExecutor := execute.NewOsExecutor()
-	p, err := cc.GetPlugins(osExecutor)
+	rootCmd.AddCommand(initialise.InitCmd)
+	rootCmd.AddCommand(doctor.DoctorCmd)
+	rootCmd.AddCommand(plugins.PluginsCmd)
+	rootCmd.Flags().AddFlagSet(initVisionFlags())
+	plugins, err := plugin.Find()
 	if err != nil {
-		cli.Warningf("cannot get plugins: %v", err)
+		log.Fatal("failed to find plugins", "error", err)
 	}
-	for _, pl := range p {
-		cobraCmd, err := plugins.GetCobraCommand(pl, osExecutor)
+	for _, plugin := range plugins {
+		cmd, err := createCommand(plugin)
 		if err != nil {
-			cli.Warningf("cannot get cobra command %s: %v", pl.Name, err)
+			// TODO(steve): handle broken commands, maybe a vision doctor command???
+			log.Error(plugin.FullPath, err)
+			continue
 		}
-		rootCmd.AddCommand(cobraCmd)
+		rootCmd.AddCommand(cmd)
 	}
 }
 
+func initVisionFlags() *pflag.FlagSet {
+	fs := pflag.NewFlagSet("vision", 1)
+	return fs
+}
+
+//go:embed example.txt
+var exampleText string
+
 var rootCmd = &cobra.Command{
-	Use:   "vision",
-	Short: "A developer productivity tool",
-	Long:  `Vision is tool to create microservice platforms and microservice scaffolding code`,
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		return checkTools(execute.NewOsExecutor())
-	},
-	Example: `You need to create a seed project in the cloud you want before using Vision for the fisrt time.
-The seed project will be used to store terraform state and hold the container registry for your microservices.
-	
-Run the following command to create a new project
-
-  vision project create myproject -r github.com/myorg/myproject -g gcr.io/myproject
-
-This will create a folder called myproject with the standard vision folder structure and a default config file.
-There is a powerful option to create a project from a template model using
-
-  vision project create -t <template-name>
-
-See examples folder for example template files
-Once you have created a project, navigate to the project folder and create a microservice using
-
-  vision service create myservice
-
-This will create a folder called myservice with the standard vision folder structure for a microservice.
-Create a microservice platform for a cloud provider, for example creating an Azure platform using
-
-  vision infra create azure -d standalone-graphql
-`,
+	Use:     "vision",
+	Short:   "A developer productivity tool",
+	Long:    `Vision is a tool to create microservice platforms and microservice scaffolding code`,
+	Example: exampleText,
 }
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		cli.Fatalf(err.Error())
+		log.Error(err)
 	}
 }
 
-func checkTools(e execute.Executor) error {
-	if !e.CommandExists("go") {
-		return errors.New("go is not installed")
+// createCommand takes in a plugin and returns a cobra command to interact with that plugin
+func createCommand(p plugin.Plugin) (*cobra.Command, error) {
+	exe := plugin.NewExecutor(p.FullPath)
+	info, err := exe.Info()
+	if err != nil {
+		return nil, err
 	}
-	if !e.CommandExists("protoc") {
-		cli.Warningf("The protoc cli is not installed. You will need this to build the service. See https://grpc.io/docs/protoc-installation/ for installation instructions.")
+	version, err := exe.Version()
+	if err != nil {
+		return nil, err
 	}
-	if !e.CommandExists("dapr") {
-		cli.Warningf("The dapr cli is not installed. You will need this to run your service locally. See https://docs.dapr.io for installation instructions.")
+
+	cobraCmd := &cobra.Command{
+		Use:                p.Name,
+		Version:            version.SemVer,
+		Short:              info.ShortDescription,
+		Long:               info.LongDescription,
+		RunE:               createPluginCommandHandler(p),
+		FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 	}
-	if !e.CommandExists("docker") {
-		cli.Warningf("The docker cli is not installed. You will need this to build infrastructure. See (https://www.docker.com) for installation instructions.")
+
+	return cobraCmd, nil
+}
+
+func createPluginCommandHandler(p plugin.Plugin) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 { // prevents index out of range
+			return fmt.Errorf("no argument provided, try: \n\t\n vision %v -v", cmd.Use)
+		}
+		exe := plugin.NewExecutor(p.FullPath)
+		switch args[0] {
+		case "init":
+			i, err := exe.Init()
+			if err != nil {
+				return err
+			}
+			err = mergeConfigs(p.Name, i.Config)
+			if err != nil {
+				return err
+			}
+		case "info":
+			info, err := exe.Info()
+			if err != nil {
+				return err
+			}
+			fmt.Println(info.LongDescription)
+		case "version":
+			v, err := exe.Version()
+			if err != nil {
+				return err
+			}
+			fmt.Println(v.SemVer)
+		case "generate":
+			g, err := exe.Generate()
+			if err != nil {
+				return err
+			}
+			if g.Success {
+				log.Info("plugin successfully generated")
+			} else {
+				log.Error("plugin failed to generate")
+			}
+		}
+
+		return nil
 	}
-	if !e.CommandExists("az") {
-		cli.Warningf("The az cli is not installed. You will need this to build Azure infrastructure. See (https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) for installation instructions.")
+}
+
+func mergeConfigs(pluginName string, config any) error {
+	writeSuccess := false
+	isTruncated := false
+	f, err := os.OpenFile("vision.json", os.O_RDWR, 0644)
+	if err != nil {
+		return err
 	}
-	if !e.CommandExists("aws") {
-		cli.Warningf("The aws cli is not installed. You will need this to build Aws infrastructure. See (https://aws.amazon.com/cli/) for installation instructions.")
+	defer f.Close()
+
+	b, err := io.ReadAll(f)
+	if err != nil {
+		return err
 	}
-	if !e.CommandExists("gcloud") {
-		cli.Warningf("The gcloud cli is not installed. You will need this to build Gcp infrastructure. See (https://cloud.google.com/sdk/gcloud) for installation instructions.")
+	defer func() {
+		// defensive coding to keep a clone of the original data
+		var originalData []byte
+		copy(originalData, b)
+		if !writeSuccess && isTruncated {
+			_, err = f.Write(originalData)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}()
+
+	var configBytes map[string]any
+	err = json.Unmarshal(b, &configBytes)
+	if err != nil {
+		return err
 	}
-	if !e.CommandExists("terraform") {
-		cli.Warningf("The terraform cli is not installed. You will need this to build infrastructure. See (https://www.terraform.io) for installation instructions.")
+
+	configBytes[pluginName] = config
+	err = f.Truncate(0)
+	if err != nil {
+		return err
 	}
+	isTruncated = true
+	_, err = f.Seek(0, 0)
+	if err != nil {
+		return err
+	}
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", "  ")
+	err = enc.Encode(configBytes)
+	if err != nil {
+		return err
+	}
+
+	writeSuccess = true
 	return nil
 }

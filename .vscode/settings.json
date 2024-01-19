@@ -1,0 +1,17 @@
+{
+  "cSpell.language": "en-GB",
+  "files.insertFinalNewline": true,
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "go.formatTool": "goimports",
+  "gopls": {
+    "formatting.local": "github.com/vision-cli/vision"
+  },
+  "[go]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
+  }
+}

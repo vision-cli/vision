@@ -1,0 +1,48 @@
+name: Vision CLI
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "**.go"
+      - ".github/workflows/vision_cli.yml"
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: go.mod
+
+      - name: Golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          args: --fix
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: go.mod
+
+      - name: Go unit tests
+        run: go test ./...
