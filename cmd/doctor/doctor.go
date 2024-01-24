@@ -10,7 +10,7 @@ import (
 
 var DoctorCmd = &cobra.Command{
 	Use:   "doctor",
-	Short: "check status of plugins",
+	Short: "Check status of plugins",
 	Long:  "Check the status of all plugins and their commands. If a command fails, it will log an error.",
 	RunE:  cmd,
 }

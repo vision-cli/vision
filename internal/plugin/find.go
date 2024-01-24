@@ -7,6 +7,14 @@ import (
 	"strings"
 )
 
+// plugin executable follows the format:
+// vision-plugin-[name]-[version]
+//
+//	[0]    [1]    [2]    [3]
+const PREFIX = "vision-plugin"
+const NAME_INDEX = 2
+const VERSION_INDEX = 3
+
 type Plugin struct {
 	Name     string
 	Version  string
@@ -16,8 +24,6 @@ type Plugin struct {
 // Find searches all dirs in the PATH envar to find binaries with specific vision formatting and assigns them to a map.
 // The formatting is `vision-plugin-[plugin-name]-[version-number]`
 func Find() ([]Plugin, error) {
-	const prefix = "vision-plugin"
-
 	var plugins []Plugin
 
 	sysPath := os.Getenv("PATH")
@@ -36,7 +42,7 @@ func Find() ([]Plugin, error) {
 			if info.IsDir() {
 				return nil
 			}
-			if strings.HasPrefix(info.Name(), prefix) {
+			if strings.HasPrefix(info.Name(), PREFIX) {
 				pluginSplit := strings.Split(info.Name(), "-")
 				if len(pluginSplit) == 4 { // only process correctly named plugins
 					name, version := pluginSplit[2], pluginSplit[3]

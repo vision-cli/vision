@@ -14,9 +14,15 @@ import (
 
 func TestFind(t *testing.T) {
 	tmp1, tmp2 := os.TempDir(), os.TempDir()
-	os.Create(filepath.Join(tmp1, "vision-plugin-tmp1-v1"))
-	os.Create(filepath.Join(tmp2, "vision-plugin-tmp2-v1"))
-	err := os.Setenv("PATH", fmt.Sprintf("%s:%s:%s", tmp1, tmp1, tmp2))
+	_, err := os.Create(filepath.Join(tmp1, "vision-plugin-tmp1-v1"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = os.Create(filepath.Join(tmp2, "vision-plugin-tmp2-v1"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = os.Setenv("PATH", fmt.Sprintf("%s:%s:%s", tmp1, tmp1, tmp2))
 	if err != nil {
 		t.Fatal(err)
 	}
