@@ -1,1 +1,0 @@
-This is the hello world plugin. Explore this plugin to see how you can create your own.
