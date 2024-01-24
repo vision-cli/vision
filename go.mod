@@ -5,6 +5,7 @@ go 1.21.1
 require (
 	github.com/charmbracelet/log v0.2.4
 	github.com/spf13/pflag v1.0.5
+	github.com/vision-cli/api v0.9.0
 
 )
 

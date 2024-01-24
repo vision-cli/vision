@@ -1,5 +1,4 @@
-<h1 align="center"><a href="https://en.wikipedia.org/wiki/Vision_(Marvel_Cinematic_Universe">Vision</a></h1>
-
+<h1 align="center">Vision</a></h1>
 <p align="center">
   <img width="150" src="./docs/images/vision-3d.jpg" />
 </p>
@@ -9,8 +8,6 @@
 TODO:
 
 - [ ] Brew install
-- [ ] Update all plugins
-- [ ] Define vision plugin API
 
 ## Install
 
